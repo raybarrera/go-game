@@ -59,5 +59,10 @@ func setupInput() {
 }
 
 func handleArrows(key ebiten.Key) {
-	print(key)
+	switch key {
+	case ebiten.KeyLeft:
+		ps.Transform.Position.X--
+	case ebiten.KeyRight:
+		ps.Transform.Position.X++
+	}
 }
