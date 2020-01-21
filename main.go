@@ -13,6 +13,7 @@ import (
 var sr rendering.SpriteRenderer
 var ps transform.PositionSystem
 var imap input.Mapping
+var consoleIsOpen bool
 
 func init() {
 	var img, _, _ = ebitenutil.NewImageFromFile("gopher.png", ebiten.FilterDefault)
@@ -36,9 +37,13 @@ func update(screen *ebiten.Image) error {
 	if ebiten.IsDrawingSkipped() {
 		return nil
 	}
-	ebitenutil.DebugPrint(screen, "Hello, World")
+	if consoleIsOpen {
+		ebitenutil.DebugPrint(screen, "Hello, World")
+	}
 	pressedkeys := input.GetPressedKeys()
+	releasedkeys := input.GetReleasedKeys()
 	imap.ProcessPressedKeys(pressedkeys)
+	imap.ProcessedReleasedKeys(releasedkeys)
 	ps.Update(screen)
 	return nil
 }
@@ -51,9 +56,12 @@ func main() {
 
 func setupInput() {
 	imap = input.Mapping{
-		Keys: map[ebiten.Key]func(ebiten.Key){
+		KeysPressed: map[ebiten.Key]func(ebiten.Key){
 			ebiten.KeyLeft:  handleArrows,
 			ebiten.KeyRight: handleArrows,
+		},
+		KeysUp: map[ebiten.Key]func(ebiten.Key){
+			ebiten.KeyGraveAccent: toggleDebugConsole,
 		},
 	}
 }
@@ -65,4 +73,9 @@ func handleArrows(key ebiten.Key) {
 	case ebiten.KeyRight:
 		ps.Transform.Position.X++
 	}
+}
+
+func toggleDebugConsole(key ebiten.Key) {
+	consoleIsOpen = !consoleIsOpen
+	print(consoleIsOpen)
 }
