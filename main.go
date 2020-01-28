@@ -2,6 +2,7 @@ package main
 
 import (
 	"go-game/internal/input"
+	"go-game/pkg/ecs"
 	"go-game/rendering"
 	"go-game/transform"
 	"log"
@@ -30,6 +31,10 @@ func init() {
 		},
 	}
 	setupInput()
+}
+
+func createGopher() {
+	gopherEntity := ecs.Entity{}
 }
 
 func update(screen *ebiten.Image) error {
