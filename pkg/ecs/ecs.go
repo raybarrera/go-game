@@ -1,6 +1,7 @@
 package ecs
 
 type Entity struct {
+	id         uint64
 	components []Component
 }
 
