@@ -10,9 +10,9 @@ type Entity struct {
 type Component struct {
 }
 
-// Ticker does nothing currently
-type Ticker interface {
-	onUpdate(dt float32)
+// System processes an update/logic on a given collection of components
+type System interface {
+	Update(dt float64)
 }
 
 // Start does nothing currently
