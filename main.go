@@ -3,6 +3,7 @@ package main
 import (
 	"go-game/internal/game"
 	"go-game/internal/input"
+	"go-game/pkg/ecs"
 	"go-game/rendering"
 	"go-game/transform"
 	"log"
@@ -19,6 +20,8 @@ var gameScreen *ebiten.Image
 var gopherActor game.ActorEntity
 var actorSystem game.ActorEntitySystem
 
+var world ecs.World
+
 //Time info
 var lastFrame float64
 
@@ -31,12 +34,13 @@ func main() {
 // Init initialiezes the world for now
 func init() {
 	goa := createGopher()
-	print("%v", goa.Sprite.Image)
 	actorSystem = game.ActorEntitySystem{
 		Entities: []game.ActorEntity{
 			goa,
 		},
 	}
+	world = ecs.World{}
+	world.AddSystem(&actorSystem)
 	setupInput()
 }
 
@@ -73,7 +77,7 @@ func update(screen *ebiten.Image) error {
 	}
 
 	if consoleIsOpen {
-		ebitenutil.DebugPrint(screen, "Hello, World")
+		ebitenutil.DebugPrint(screen, "Console active")
 	}
 	pressedkeys := input.GetPressedKeys()
 	releasedkeys := input.GetReleasedKeys()
