@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go-game/internal/game"
 	"go-game/internal/input"
 	"go-game/rendering"
 	"go-game/transform"
@@ -11,15 +12,12 @@ import (
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
-var sr rendering.SpriteRenderer
-var ps transform.PositionSystem
 var imap input.Mapping
 var consoleIsOpen bool
 
-var gopher rendering.SpriteRenderer
-var renderSystem rendering.SpriteRenderSystem
-
 var gameScreen *ebiten.Image
+var gopherActor game.ActorEntity
+var actorSystem game.ActorEntitySystem
 
 //Time info
 var lastFrame float64
@@ -28,52 +26,52 @@ func main() {
 	if err := ebiten.Run(update, 640, 480, 2, "Test Game"); err != nil {
 		log.Fatal(err)
 	}
-	Init()
 }
 
-func Init() {
-	createGopher()
-	pos := transform.Position{
-		X: 10,
-		Y: 200,
-	}
-	ps = transform.PositionSystem{
-		Sprite: sr,
-		Transform: transform.Transform{
-			Position: pos,
+// Init initialiezes the world for now
+func init() {
+	goa := createGopher()
+	print("%v", goa.Sprite.Image)
+	actorSystem = game.ActorEntitySystem{
+		Entities: []game.ActorEntity{
+			goa,
 		},
 	}
 	setupInput()
 }
 
-func createGopher() {
-	var img, _, _ = ebitenutil.NewImageFromFile("gopher.png", ebiten.FilterDefault)
+func createGopher() game.ActorEntity {
+	var img, _, err = ebitenutil.NewImageFromFile("gopher.png", ebiten.FilterDefault)
+	if err != nil {
+		log.Fatal(err)
+	}
 	gopherSprite := rendering.SpriteImageComponent{
 		Image: img,
 	}
-	targetSprite := rendering.SpriteImageComponent{
-		Image: gameScreen,
+	pos := transform.PositionComponent{
+		X: 50,
+		Y: 50,
 	}
-	gopher = rendering.SpriteRenderer{
-		TargetImage: targetSprite,
-		Sprite:      gopherSprite,
+
+	gopherActor = game.ActorEntity{
+		Position: pos,
+		Sprite:   gopherSprite,
 	}
-	renderSystem = rendering.SpriteRenderSystem{
-		Entities: []rendering.SpriteRenderer{
-			gopher,
-		},
-	}
+	return gopherActor
 }
 
 func update(screen *ebiten.Image) error {
+	// Time calculations
 	gameScreen = screen
 	now := time.Now().UnixNano()
 	nowMilliseconds := now / 1000000
 	dt := float64(nowMilliseconds) - lastFrame
 	lastFrame = float64(time.Now().UnixNano())
+
 	if ebiten.IsDrawingSkipped() {
 		return nil
 	}
+
 	if consoleIsOpen {
 		ebitenutil.DebugPrint(screen, "Hello, World")
 	}
@@ -81,9 +79,9 @@ func update(screen *ebiten.Image) error {
 	releasedkeys := input.GetReleasedKeys()
 	imap.ProcessPressedKeys(pressedkeys)
 	imap.ProcessedReleasedKeys(releasedkeys)
-	ps.Update(screen)
-	renderSystem.Update(dt)
-
+	// ps.Update(screen)
+	// renderSystem.Update(dt)
+	actorSystem.Update(screen, dt)
 	return nil
 }
 
@@ -100,12 +98,12 @@ func setupInput() {
 }
 
 func handleArrows(key ebiten.Key) {
-	switch key {
-	case ebiten.KeyLeft:
-		ps.Transform.Position.X--
-	case ebiten.KeyRight:
-		ps.Transform.Position.X++
-	}
+	// switch key {
+	// case ebiten.KeyLeft:
+	// 	ps.Transform.Position.X--
+	// case ebiten.KeyRight:
+	// 	ps.Transform.Position.X++
+	// }
 }
 
 func toggleDebugConsole(key ebiten.Key) {

@@ -1,5 +1,7 @@
 package ecs
 
+import "github.com/hajimehoshi/ebiten"
+
 // Entity is a collection of components
 type Entity struct {
 	id         uint64
@@ -12,7 +14,7 @@ type Component struct {
 
 // System processes an update/logic on a given collection of components
 type System interface {
-	Update(dt float64)
+	Update(screen *ebiten.Image, dt float64)
 }
 
 // Start does nothing currently
