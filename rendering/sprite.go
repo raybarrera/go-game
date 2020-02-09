@@ -17,18 +17,3 @@ type SpriteRenderer struct {
 type SpriteImageComponent struct {
 	Image *ebiten.Image
 }
-
-// SpriteRenderSystem draws an image to an image
-type SpriteRenderSystem struct {
-	Entities []SpriteRenderer
-}
-
-// Update draws the sprite renderer each frame
-func (r *SpriteRenderSystem) Update(dt float64) {
-	if ebiten.IsDrawingSkipped() {
-		return
-	}
-	for _, entity := range r.Entities {
-		entity.TargetImage.Image.DrawImage(entity.Sprite.Image, nil)
-	}
-}
