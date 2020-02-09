@@ -14,7 +14,7 @@ type Component struct {
 
 // System processes an update/logic on a given collection of components
 type System interface {
-	Update(screen *ebiten.Image, deltaTime float64)
+	Update(screen *ebiten.Image)
 }
 
 // World manages all systems and entities
@@ -39,8 +39,8 @@ func (w *World) Systems() []System {
 }
 
 // Update calls update on all the systems managed by this world.
-func (w *World) Update(screen *ebiten.Image, deltaTime float64) {
+func (w *World) Update(screen *ebiten.Image) {
 	for _, system := range w.systems {
-		system.Update(screen, deltaTime)
+		system.Update(screen)
 	}
 }

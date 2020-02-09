@@ -8,8 +8,8 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
-// ActorEntity represents a game object in the world.
-type ActorEntity struct {
+// Actor represents a game object in the world.
+type Actor struct {
 	ecs.Entity
 	Position    transform.PositionComponent
 	Rotation    transform.RotationComponent
@@ -19,11 +19,14 @@ type ActorEntity struct {
 
 // ActorEntitySystem draws all actors at a given position
 type ActorEntitySystem struct {
-	Entities []ActorEntity
+	Entities []*Actor
 }
 
 //Update draws one frame of the actor
-func (e *ActorEntitySystem) Update(screen *ebiten.Image, deltaTime float64) {
+func (e *ActorEntitySystem) Update(screen *ebiten.Image) {
+	if ebiten.IsDrawingSkipped() {
+		return
+	}
 	for _, entity := range e.Entities {
 		options := &ebiten.DrawImageOptions{}
 		options.GeoM.Translate(entity.Position.X, entity.Position.Y)
