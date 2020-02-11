@@ -20,7 +20,7 @@ type MovementSystem struct {
 	Actor    *Actor
 }
 
-// Update implements the ecs system interface
+// Update implements the ecs.SystemUpdater interface
 func (ms *MovementSystem) Update(screen *ebiten.Image) {
 	for _, k := range ms.Keys {
 		if ebiten.IsKeyPressed(k) {
