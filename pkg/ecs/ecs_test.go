@@ -35,6 +35,30 @@ func TestWorld_QueryEntities(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "Check multiple entities",
+			w: &World{
+				Entities: map[interface{}][]reflect.Type{
+					&args{}: []reflect.Type{
+						reflect.TypeOf(""),
+					},
+					1: []reflect.Type{
+						reflect.TypeOf(""),
+						reflect.TypeOf(2.0),
+					},
+				},
+			},
+			args: args{
+				components: []reflect.Type{
+					reflect.TypeOf(""),
+				},
+			},
+			want: []interface{}{
+				&args{},
+				1,
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
