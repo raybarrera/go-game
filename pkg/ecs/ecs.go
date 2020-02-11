@@ -44,6 +44,9 @@ func (w *World) Update(screen *ebiten.Image) {
 }
 
 // QueryEntities returns a slice of Entities matching teh given components
+//
+// This functionality is loosely based on Unity's ECS EntityQuery implementation
+// albeit, purely based on the public API since AFAIK, the implementation is closed-source.
 func (w *World) QueryEntities(components ...reflect.Type) ([]interface{}, error) {
 	var entities []interface{}
 	for _, c := range components {
@@ -57,6 +60,7 @@ func (w *World) QueryEntities(components ...reflect.Type) ([]interface{}, error)
 	return entities, nil
 }
 
+// containsElement is a helper function that finds the given type in the type array.
 func containsElement(arr []reflect.Type, check reflect.Type) (reflect.Type, bool) {
 	for _, e := range arr {
 		if e == check {
