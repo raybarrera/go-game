@@ -23,7 +23,7 @@ type SystemUpdater interface {
 // World manages all systems and entities
 type World struct {
 	SystemUpdaters []SystemUpdater
-	Entities       map[reflect.Type][]reflect.Type
+	Entities       map[interface{}][]reflect.Type
 }
 
 // AddSystem adds a system for the given world to manage.
@@ -44,8 +44,8 @@ func (w *World) Update(screen *ebiten.Image) {
 }
 
 // QueryEntities returns a slice of Entities matching teh given components
-func (w *World) QueryEntities(components ...reflect.Type) ([]reflect.Type, error) {
-	var entities []reflect.Type
+func (w *World) QueryEntities(components ...reflect.Type) ([]interface{}, error) {
+	var entities []interface{}
 	for _, c := range components {
 		for key, elem := range w.Entities {
 			_, ok := containsElement(elem, c)

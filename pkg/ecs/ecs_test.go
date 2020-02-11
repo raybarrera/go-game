@@ -13,14 +13,14 @@ func TestWorld_QueryEntities(t *testing.T) {
 		name    string
 		w       *World
 		args    args
-		want    []reflect.Type
+		want    []interface{}
 		wantErr bool
 	}{
 		{
 			name: "Check we get the right types back",
 			w: &World{
-				Entities: map[reflect.Type][]reflect.Type{
-					reflect.TypeOf(&args{}): []reflect.Type{
+				Entities: map[interface{}][]reflect.Type{
+					&args{}: []reflect.Type{
 						reflect.TypeOf(""),
 					},
 				},
@@ -30,8 +30,8 @@ func TestWorld_QueryEntities(t *testing.T) {
 					reflect.TypeOf(""),
 				},
 			},
-			want: []reflect.Type{
-				reflect.TypeOf(&args{}),
+			want: []interface{}{
+				&args{},
 			},
 			wantErr: false,
 		},
