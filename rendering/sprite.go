@@ -3,7 +3,7 @@ package rendering
 import (
 	"go-game/pkg/ecs"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // SpriteRenderer is a entity that draws itself on screen using an image

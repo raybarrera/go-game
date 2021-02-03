@@ -5,7 +5,7 @@ import (
 	"go-game/rendering"
 	"go-game/transform"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // Actor represents a game object in the world.
@@ -24,9 +24,6 @@ type ActorEntitySystem struct {
 
 //Update draws one frame of the actor
 func (e *ActorEntitySystem) Update(screen *ebiten.Image) {
-	if ebiten.IsDrawingSkipped() {
-		return
-	}
 	for _, entity := range e.Entities {
 		options := &ebiten.DrawImageOptions{}
 		options.GeoM.Translate(entity.Position.X, entity.Position.Y)

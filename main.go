@@ -7,8 +7,9 @@ import (
 	"go-game/transform"
 	"log"
 
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	_ "image/png"
 )
 
 var consoleIsOpen bool
@@ -20,12 +21,18 @@ var actorSystem *game.ActorEntitySystem
 var world ecs.World
 
 func main() {
-	if err := ebiten.Run(update, 640, 480, 2, "Test Game"); err != nil {
+	ebiten.SetWindowSize(640, 480)
+	ebiten.SetWindowTitle("Test Game")
+	g := &game.Game{}
+	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
+	//if err := ebiten.Run(update, 640, 480, 2, "Test Game"); err != nil {
+	//	log.Fatal(err)
+	//}
 }
 
-// Init initialiezes the world for now
+// Init initializes the world for now
 func init() {
 	goa := createGopher()
 	actorSystem = &game.ActorEntitySystem{
@@ -41,7 +48,7 @@ func init() {
 }
 
 func createGopher() *game.Actor {
-	var img, _, err = ebitenutil.NewImageFromFile("gopher.png", ebiten.FilterDefault)
+	var img, _, err = ebitenutil.NewImageFromFile("gopher.png")
 	if err != nil {
 		log.Fatal(err)
 	}

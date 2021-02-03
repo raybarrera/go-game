@@ -3,7 +3,7 @@ package ecs
 import (
 	"reflect"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // Entity is a collection of components

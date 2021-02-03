@@ -3,7 +3,7 @@ package game
 import (
 	"go-game/pkg/ecs"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // MovementVelocity is used to modify movement speed
