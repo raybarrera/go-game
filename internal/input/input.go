@@ -7,9 +7,13 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-// ActionMapComponent does things
+// ActionMapComponent container for mapping actions to ebiten key presses
 type ActionMapComponent struct {
 	ActionMap map[ebiten.Key]func(ebiten.Key)
+}
+
+type Handler interface {
+	Handle()
 }
 
 // ActionProcessorSystem is used to process all key-action maps
