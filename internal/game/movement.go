@@ -21,7 +21,7 @@ type MovementSystem struct {
 }
 
 // Update implements the ecs.SystemUpdater interface
-func (ms *MovementSystem) Update(screen *ebiten.Image) {
+func (ms *MovementSystem) Update() {
 	for _, k := range ms.Keys {
 		if ebiten.IsKeyPressed(k) {
 			switch k {

@@ -17,3 +17,4 @@ type SpriteRenderer struct {
 type SpriteImageComponent struct {
 	Image *ebiten.Image
 }
+

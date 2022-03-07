@@ -17,16 +17,20 @@ type Actor struct {
 	Sprite      rendering.SpriteImageComponent
 }
 
+func (a Actor) Draw(image *ebiten.Image) {
+	options := &ebiten.DrawImageOptions{}
+	options.GeoM.Translate(a.Position.X, a.Position.Y)
+	image.DrawImage(a.Sprite.Image, options)
+}
+
 // ActorEntitySystem draws all actors at a given position
 type ActorEntitySystem struct {
 	Entities []*Actor
 }
 
 //Update draws one frame of the actor
-func (e *ActorEntitySystem) Update(screen *ebiten.Image) {
-	for _, entity := range e.Entities {
-		options := &ebiten.DrawImageOptions{}
-		options.GeoM.Translate(entity.Position.X, entity.Position.Y)
-		screen.DrawImage(entity.Sprite.Image, options)
-	}
+func (e *ActorEntitySystem) Update() {
+	//for _, entity := range e.Entities {
+	//	entity.Draw(g.Screen)
+	//}
 }

@@ -2,8 +2,6 @@ package ecs
 
 import (
 	"reflect"
-
-	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // Entity is a collection of components
@@ -17,7 +15,7 @@ type Entity struct {
 
 // SystemUpdater processes an update/logic on a given collection of components
 type SystemUpdater interface {
-	Update(screen *ebiten.Image)
+	Update()
 }
 
 // World manages all systems and entities
@@ -38,9 +36,9 @@ func (w *World) Systems() []SystemUpdater {
 }
 
 // Update calls update on all the systems managed by this world.
-func (w *World) Update(screen *ebiten.Image) {
+func (w *World) Update() {
 	for _, system := range w.SystemUpdaters {
-		system.Update(screen)
+		system.Update()
 	}
 }
 
@@ -52,7 +50,7 @@ func (w *World) QueryEntities(components ...reflect.Type) ([]interface{}, error)
 	var entities []interface{}
 	for _, c := range components {
 		for key, elem := range w.Entities {
-			_, ok := containsElement(elem, c)
+			_, ok := ContainsElement(elem, c)
 			if ok {
 				entities = append(entities, key)
 			}
@@ -61,8 +59,8 @@ func (w *World) QueryEntities(components ...reflect.Type) ([]interface{}, error)
 	return entities, nil
 }
 
-// containsElement is a helper function that finds the given type in the type array.
-func containsElement(arr []reflect.Type, check reflect.Type) (reflect.Type, bool) {
+// ContainsElement is a helper function that finds the given type in the type array.
+func ContainsElement(arr []reflect.Type, check reflect.Type) (reflect.Type, bool) {
 	for _, e := range arr {
 		if e == check {
 			return e, true

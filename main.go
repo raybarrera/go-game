@@ -24,8 +24,9 @@ func main() {
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("Test Game")
 	g := &game.Game{
-		World: world,
+		World: &world,
 	}
+	g.AddActorES(actorSystem)
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
@@ -75,7 +76,7 @@ func update(screen *ebiten.Image) error {
 	if consoleIsOpen {
 		ebitenutil.DebugPrint(screen, "Console active")
 	}
-	world.Update(screen)
+	//world.Update(screen)
 	return nil
 }
 
