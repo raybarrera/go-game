@@ -9,7 +9,7 @@ import (
 // Entity is a collection of components
 // TODO possibly need to remove this, or adopt it more generally. Might constrain entities too much to fit this container.
 // the alternative is to rely on reflection to get entities, which could be any type without this constraint.
-// There is a possibility of using an interface here as well, but it feels a bit contrived. - Ray.
+// There is a possibility of using an interface here as well, but it feels a bit forced. - Ray.
 type Entity struct {
 	id         uint64
 	components []interface{}
@@ -21,6 +21,7 @@ type SystemUpdater interface {
 }
 
 // World manages all systems and entities
+// TODO: Entities is not in use. Right now entities are arrays inside of systems, not the world. Pick a lane.
 type World struct {
 	SystemUpdaters []SystemUpdater
 	Entities       map[interface{}][]reflect.Type
@@ -43,7 +44,7 @@ func (w *World) Update(screen *ebiten.Image) {
 	}
 }
 
-// QueryEntities returns a slice of Entities matching teh given components
+// QueryEntities returns a slice of Entities matching the given components
 //
 // This functionality is loosely based on Unity's ECS EntityQuery implementation
 // albeit, purely based on the public API since AFAIK, the implementation is closed-source.

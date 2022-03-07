@@ -23,7 +23,9 @@ var world ecs.World
 func main() {
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("Test Game")
-	g := &game.Game{}
+	g := &game.Game{
+		World: world,
+	}
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
@@ -32,7 +34,7 @@ func main() {
 	//}
 }
 
-// Init initializes the world for now
+// Init initializes the world and gopher for now
 func init() {
 	goa := createGopher()
 	actorSystem = &game.ActorEntitySystem{

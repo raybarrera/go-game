@@ -3,12 +3,15 @@ package game
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"go-game/pkg/ecs"
 )
 
 var pointerImage = ebiten.NewImage(8, 8)
 
-// Game is a struc that contains rules and other info about a game
-type Game struct {}
+// Game is a struct that contains rules and other info about a game
+type Game struct {
+	World ecs.World
+}
 
 func (g *Game) Update() error {
 	// Write your game's logical update.
