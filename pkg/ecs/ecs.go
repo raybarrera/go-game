@@ -9,8 +9,12 @@ import (
 // the alternative is to rely on reflection to get entities, which could be any type without this constraint.
 // There is a possibility of using an interface here as well, but it feels a bit forced. - Ray.
 type Entity struct {
-	id         uint64
+	Id         uint64
 	components []interface{}
+}
+
+func (e *Entity) GetId() uint64 {
+	return e.Id
 }
 
 // SystemUpdater processes an update/logic on a given collection of components

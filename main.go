@@ -12,7 +12,6 @@ import (
 	_ "image/png"
 )
 
-var consoleIsOpen bool
 
 var gameScreen *ebiten.Image
 var gopherActor *game.Actor
@@ -30,9 +29,6 @@ func main() {
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
-	//if err := ebiten.Run(update, 640, 480, 2, "Test Game"); err != nil {
-	//	log.Fatal(err)
-	//}
 }
 
 // Init initializes the world and gopher for now
@@ -70,16 +66,6 @@ func createGopher() *game.Actor {
 	return gopherActor
 }
 
-func update(screen *ebiten.Image) error {
-	gameScreen = screen
-
-	if consoleIsOpen {
-		ebitenutil.DebugPrint(screen, "Console active")
-	}
-	//world.Update(screen)
-	return nil
-}
-
 func setupInput() *game.MovementSystem {
 	return &game.MovementSystem{
 		Velocity: game.MovementVelocity{
@@ -94,7 +80,3 @@ func setupInput() *game.MovementSystem {
 	}
 }
 
-func toggleDebugConsole(key ebiten.Key) {
-	consoleIsOpen = !consoleIsOpen
-	print(consoleIsOpen)
-}

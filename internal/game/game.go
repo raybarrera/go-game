@@ -10,13 +10,14 @@ var pointerImage = ebiten.NewImage(8, 8)
 
 // Game is a struct that contains rules and other info about a game
 type Game struct {
-	World *ecs.World
-	Actors []*ActorEntitySystem
-	Screen *ebiten.Image
+	World              *ecs.World
+	ActorEntitySystems []*ActorEntitySystem
+	Screen             *ebiten.Image
+	ShowConsole        bool
 }
 
 func (g *Game) AddActorES(a *ActorEntitySystem) {
-	g.Actors = append(g.Actors, a)
+	g.ActorEntitySystems = append(g.ActorEntitySystems, a)
 }
 
 func (g *Game) Update() error {
@@ -34,7 +35,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	//		aes := ActorEntitySystem(s)
 	//	}
 	//}
-	for _, aes := range g.Actors {
+	for _, aes := range g.ActorEntitySystems {
 		for _, a := range aes.Entities {
 			a.Draw(screen)
 		}
@@ -44,11 +45,18 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	op.GeoM.Translate(0, 0)
 	op.GeoM.Translate(320, 240)
 	screen.DrawImage(pointerImage, op)
-	ebitenutil.DebugPrint(screen, "Console active")
+	if g.ShowConsole {
+		ebitenutil.DebugPrint(screen, "Console active")
+	}
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
 // If you don't have to adjust the screen size with the outside size, just return a fixed size.
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
 	return 320, 240
+}
+
+func (g *Game) toggleDebugConsole(key ebiten.Key) {
+	g.ShowConsole = !g.ShowConsole
+	print(g.ShowConsole)
 }
