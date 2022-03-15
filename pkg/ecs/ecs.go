@@ -9,23 +9,17 @@ import (
 // TODO possibly need to remove this, or adopt it more generally. Might constrain entities too much to fit this container.
 // the alternative is to rely on reflection to get entities, which could be any type without this constraint.
 // There is a possibility of using an interface here as well, but it feels a bit forced. - Ray.
-type Entity struct {
-	Id         uuid.UUID
-	components []interface{}
-}
+type Entity uuid.UUID
 
-func (e *Entity) GetId() uuid.UUID {
-	return e.Id
-}
-
+// NewEntity returns an instance of Entity with a valid internal UUID
 func NewEntity() *Entity {
+	//Facade the usage of the uuid package, which is itself a byte slice
 	id, err := uuid.NewUUID()
 	if err != nil {
 		return nil
 	}
-	return &Entity{
-		Id : id,
-	}
+	e := Entity(id)
+	return &e
 }
 
 // SystemUpdater processes an update/logic on a given collection of components
@@ -72,6 +66,11 @@ func (w *World) QueryEntities(components ...reflect.Type) ([]interface{}, error)
 		}
 	}
 	return entities, nil
+}
+
+type EntityManager struct {
+	// Entities maps an entity (an uuid, essentially) to a slice of components (data/structs)
+	Entities map[Entity][]interface{}
 }
 
 // ContainsElement is a helper function that finds the given type in the type array.
