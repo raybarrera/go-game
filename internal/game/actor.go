@@ -17,15 +17,6 @@ type Actor struct {
 	Sprite      rendering.SpriteImageComponent
 }
 
-// NewActor Returns an *Actor with a valid UUID
-func NewActor() *Actor {
-	return &Actor{
-		Entity: ecs.Entity{
-			Id: 0, //Not really valid id
-		},
-	}
-}
-
 func (a Actor) Draw(image *ebiten.Image) {
 	options := &ebiten.DrawImageOptions{}
 	options.GeoM.Translate(a.Position.X, a.Position.Y)

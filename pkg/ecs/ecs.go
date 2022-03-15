@@ -1,6 +1,7 @@
 package ecs
 
 import (
+	"github.com/google/uuid"
 	"reflect"
 )
 
@@ -9,12 +10,22 @@ import (
 // the alternative is to rely on reflection to get entities, which could be any type without this constraint.
 // There is a possibility of using an interface here as well, but it feels a bit forced. - Ray.
 type Entity struct {
-	Id         uint64
+	Id         uuid.UUID
 	components []interface{}
 }
 
-func (e *Entity) GetId() uint64 {
+func (e *Entity) GetId() uuid.UUID {
 	return e.Id
+}
+
+func NewEntity() *Entity {
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return nil
+	}
+	return &Entity{
+		Id : id,
+	}
 }
 
 // SystemUpdater processes an update/logic on a given collection of components
