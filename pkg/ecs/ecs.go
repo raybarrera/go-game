@@ -4,22 +4,11 @@ import (
 	"reflect"
 )
 
-// Entity is a collection of components
-// TODO possibly need to remove this, or adopt it more generally. Might constrain entities too much to fit this container.
-// the alternative is to rely on reflection to get entities, which could be any type without this constraint.
-// There is a possibility of using an interface here as well, but it feels a bit forced. - Ray.
-type Entity struct {
-	Id         uint64
-	components []interface{}
-}
-
-func (e *Entity) GetId() uint64 {
-	return e.Id
-}
+type Id uint64
 
 // SystemUpdater processes an update/logic on a given collection of components
 type SystemUpdater interface {
-	Update()
+	Update(deltaTime float64)
 }
 
 // World manages all systems and entities
@@ -40,9 +29,9 @@ func (w *World) Systems() []SystemUpdater {
 }
 
 // Update calls update on all the systems managed by this world.
-func (w *World) Update() {
+func (w *World) Update(deltaTime float64) {
 	for _, system := range w.SystemUpdaters {
-		system.Update()
+		system.Update(deltaTime)
 	}
 }
 
