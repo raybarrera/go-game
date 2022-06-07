@@ -1,8 +1,6 @@
 package game
 
 import (
-	"go-game/pkg/ecs"
-
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -14,21 +12,20 @@ type MovementVelocity struct {
 
 // MovementSystem handles movement of the given actor
 type MovementSystem struct {
-	ecs.Entity
 	Keys     []ebiten.Key
 	Velocity MovementVelocity
 	Actor    *Actor
 }
 
 // Update implements the ecs.SystemUpdater interface
-func (ms *MovementSystem) Update() {
+func (ms *MovementSystem) Update(deltaTime float64) {
 	for _, k := range ms.Keys {
 		if ebiten.IsKeyPressed(k) {
 			switch k {
 			case ebiten.KeyLeft:
-				ms.Actor.Position.X -= ms.Velocity.XS
+				ms.Actor.Position.X -= ms.Velocity.XS * deltaTime
 			case ebiten.KeyRight:
-				ms.Actor.Position.X += ms.Velocity.XS
+				ms.Actor.Position.X += ms.Velocity.XS * deltaTime
 			}
 		}
 	}

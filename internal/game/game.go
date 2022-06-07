@@ -1,12 +1,16 @@
 package game
 
 import (
+	"fmt"
+	"go-game/pkg/ecs"
+	"time"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"go-game/pkg/ecs"
 )
 
 var pointerImage = ebiten.NewImage(8, 8)
+var previousFrameTime = time.Now()
 
 // Game is a struct that contains rules and other info about a game
 type Game struct {
@@ -21,7 +25,10 @@ func (g *Game) AddActorES(a *ActorEntitySystem) {
 }
 
 func (g *Game) Update() error {
-	// Write your game's logical update.
+	dt := float64(time.Since(previousFrameTime).Seconds())
+	previousFrameTime = time.Now()
+	fmt.Printf("%v time\n", dt)
+	g.World.Update(dt)
 	return nil
 }
 

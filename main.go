@@ -3,15 +3,14 @@ package main
 import (
 	"go-game/internal/game"
 	"go-game/pkg/ecs"
-	"go-game/rendering"
 	"go-game/transform"
 	"log"
 
+	_ "image/png"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	_ "image/png"
 )
-
 
 var gameScreen *ebiten.Image
 var gopherActor *game.Actor
@@ -51,9 +50,7 @@ func createGopher() *game.Actor {
 	if err != nil {
 		log.Fatal(err)
 	}
-	gopherSprite := rendering.SpriteImageComponent{
-		Image: img,
-	}
+	gopherSprite := img
 	pos := transform.PositionComponent{
 		X: 50,
 		Y: 50,
@@ -69,8 +66,8 @@ func createGopher() *game.Actor {
 func setupInput() *game.MovementSystem {
 	return &game.MovementSystem{
 		Velocity: game.MovementVelocity{
-			XS: 5.0,
-			YS: 5.0,
+			XS: 50.0,
+			YS: 50.0,
 		},
 		Actor: gopherActor,
 		Keys: []ebiten.Key{
@@ -79,4 +76,3 @@ func setupInput() *game.MovementSystem {
 		},
 	}
 }
-
