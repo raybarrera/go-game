@@ -10,5 +10,5 @@ type SpriteRenderer struct {
 	Sprite      SpriteImageComponent
 }
 
-// SpriteImageComponent holds an ebiten image to bed used in a rendering sytstem
+// SpriteImageComponent holds an Ebiten image to be used in a rendering system
 type SpriteImageComponent *ebiten.Image

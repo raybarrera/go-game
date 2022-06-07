@@ -52,6 +52,11 @@ func (w *World) QueryEntities(components ...reflect.Type) ([]interface{}, error)
 	return entities, nil
 }
 
+type EntityManager struct {
+	// Entities maps an entity (an uuid, essentially) to a slice of components (data/structs)
+	// Entities map[Entity][]interface{}
+}
+
 // ContainsElement is a helper function that finds the given type in the type array.
 func ContainsElement(arr []reflect.Type, check reflect.Type) (reflect.Type, bool) {
 	for _, e := range arr {
