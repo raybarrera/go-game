@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"go-game/pkg/ecs"
 	"time"
 
@@ -27,7 +26,7 @@ func (g *Game) AddActorES(a *ActorEntitySystem) {
 func (g *Game) Update() error {
 	dt := float64(time.Since(previousFrameTime).Seconds())
 	previousFrameTime = time.Now()
-	fmt.Printf("%v time\n", dt)
+	// fmt.Printf("%v time\n", dt)
 	g.World.Update(dt)
 	return nil
 }
