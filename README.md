@@ -1,7 +1,8 @@
 # GO GAME Docs
+Simple demo game used to demonstrate a superset of game dev tools on top of `Ebiten`
 
 ## ECS
 
-## Loop Wrapper
+## Tiled Support
 
 ## Debug Console
