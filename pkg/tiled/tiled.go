@@ -1,5 +1,10 @@
 package tiled
 
+import (
+	"encoding/json"
+	"io/ioutil"
+)
+
 // TileMap implements the data structure of a tiled file as described at https://doc.mapeditor.org/en/stable/reference/json-map-format/
 type TileMap struct {
 	BackgroundColor  string     `json:"backgroundcolor"`
@@ -24,6 +29,30 @@ type TileMap struct {
 	TileSets         []TileSet  `json:"tilesets"`
 	Type             string     `json:"type"`
 	Version          string     `json:"version"`
+}
+
+// ParseMapFile takes in a path as a string, reads the file attempts to unmarshal it into a TileMap, and returns it and/or an error
+func ParseMapFile(path string) (TileMap, error) {
+	bytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return TileMap{}, err
+	}
+	var t TileMap
+	err = json.Unmarshal(bytes, &t)
+	if err != nil {
+		return TileMap{}, err
+	}
+	return t, nil
+}
+
+// ParseMapString attempts to unm
+func ParseMapString(mapString string) (TileMap, error) {
+	var t TileMap
+	err := json.Unmarshal([]byte(mapString), &t)
+	if err != nil {
+		return TileMap{}, err
+	}
+	return t, nil
 }
 
 type Layer struct{}
