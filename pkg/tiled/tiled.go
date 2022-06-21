@@ -2,6 +2,7 @@ package tiled
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 )
 
@@ -31,6 +32,19 @@ type TileMap struct {
 	Version          string     `json:"version"`
 }
 
+func (t *TileMap) Update(deltaTime float64) {
+
+}
+
+func (t *TileMap) String() (string, error) {
+	b, err := json.Marshal(t)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	return string(b), nil
+}
+
 // ParseMapFile takes in a path as a string, reads the file attempts to unmarshal it into a TileMap, and returns it and/or an error
 func ParseMapFile(path string) (TileMap, error) {
 	bytes, err := ioutil.ReadFile(path)
@@ -55,7 +69,46 @@ func ParseMapString(mapString string) (TileMap, error) {
 	return t, nil
 }
 
-type Layer struct{}
+type Layer struct {
+	Chunks           []Chunk    `json:"chunks"`
+	Compression      string     `json:"compression"`
+	Data             []uint     `json:"data"`
+	DrawOrder        string     `json:"draworder"`
+	Encoding         string     `json:"encoding"`
+	Height           int        `json:"height"`
+	Id               int        `json:"id"`
+	Image            string     `json:"image"`
+	Layers           []Layer    `json:"layers"`
+	Locked           bool       `json:"locked"`
+	Name             string     `json:"name"`
+	Objects          []Object   `json:"objects"`
+	OffsetX          float64    `json:"offsetx"`
+	OffsetY          float64    `json:"offsety"`
+	Opacity          float64    `json:"opacity"`
+	ParallaxX        float64    `json:"parallaxx"`
+	ParallaxY        float64    `json:"parallaxy"`
+	Properties       []Property `json:"properties"`
+	RepeatX          bool       `json:"repeatX"`
+	RepeatY          bool       `json:"repeaty"`
+	StartX           int        `json:"startx"`
+	StartY           int        `json:"starty"`
+	TintColor        string     `json:"tintcolor"`
+	TransparentColor string     `json:"transparentcolor"`
+	Type             string     `json:"type"`
+	Visible          bool       `json:"visible"`
+	Width            int        `json:"width"`
+	X                int        `json:"x"`
+	Y                int        `json:"y"`
+}
+
+type Chunk struct {
+	Data   []uint `json:"data"`
+	Height int    `json:"height"`
+	Width  int    `json:"width"`
+	X      int    `json:"x"`
+	Y      int    `json:"y"`
+}
+
 type Property struct {
 	Name         string      `json:"name"`
 	Type         string      `json:"type"`
@@ -132,6 +185,12 @@ type Transformations struct {
 	PreferUntransformed bool `json:"preferuntransformed"`
 }
 
+type ObjectTemplate struct {
+	Type    string  `json:"type"`
+	Tileset TileSet `json:"tileset"`
+	Object  Object  `json:"object"`
+}
+
 type Object struct {
 	Ellipse    bool       `json:"ellipse"`
 	GId        int        `json:"gid"`
@@ -157,4 +216,17 @@ type Point struct {
 	Y float32 `json:"y"`
 }
 
-type Text struct{}
+type Text struct {
+	Bold                bool   `json:"bold"`
+	Color               string `json:"color"`
+	FontFamily          string `json:"fontfamily"`
+	HorizontalAlignment string `json:"halign"`
+	Italic              bool   `json:"italic"`
+	Kerning             bool   `json:"kerning"`
+	PixelSize           int    `json:"pixelsize"`
+	StrikeOut           bool   `json:"strikeout"`
+	Text                string `json:"text"`
+	Underline           bool   `json:"underline"`
+	VerticalAlignment   string `json:"verticalalignment"`
+	Wrap                bool   `json:"wrap"`
+}
