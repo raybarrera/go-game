@@ -9,6 +9,7 @@ import (
 	"go-game/pkg/tiled"
 	"go-game/transform"
 	"image"
+	_ "image/png"
 	"log"
 )
 
