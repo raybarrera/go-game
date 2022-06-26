@@ -19,12 +19,13 @@ var actorSystem *game.ActorEntitySystem
 var tilesImage *ebiten.Image
 
 func init() {
-	tilesImage, _, err := ebitenutil.NewImageFromFile("Assets/Maps/gameart2d-desert.png")
+	var err error
+	tilesImage, _, err = ebitenutil.NewImageFromFile("Assets/Maps/gameart2d-desert.png")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	var actors []*game.Actor
+	actors := []*game.Actor{}
 	ParseMap()
 	for lIndex, l := range TileMap.Layers {
 		for i, t := range l.Data {
@@ -32,15 +33,18 @@ func init() {
 				continue
 			}
 			tileSize := TileMap.TileSets[lIndex].TileWidth
+			xi := float64((i % l.Width) * tileSize)
+			yi := float64((i / l.Width) * tileSize)
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64((i%l.Width)*tileSize), float64((i/l.Width)*tileSize))
-			sx := ((int)(t-1) % TileMap.TileSets[lIndex].Columns) * tileSize
-			sy := ((int)(t-1) / TileMap.TileSets[lIndex].Columns) * tileSize
-			sub := tilesImage.SubImage(image.Rect(sx, sy, sx+tileSize, sy+tileSize))
-			img := ebiten.NewImageFromImage(sub)
+			op.GeoM.Translate(xi, yi)
+			sub := GetSubImageFromTileset(TileMap.TileSets[lIndex], int(t))
+			img := ebiten.NewImageFromImage(*sub)
 			a := &game.Actor{
-				Position: transform.PositionComponent{},
-				Sprite:   img,
+				Position: transform.PositionComponent{
+					X: xi,
+					Y: yi,
+				},
+				Sprite: img,
 			}
 			actors = append(actors, a)
 		}
@@ -48,15 +52,23 @@ func init() {
 	actorSystem = &game.ActorEntitySystem{
 		Entities: actors,
 	}
-	g.AddActorES(actorSystem)
-}
-
-func main() {
-	ebiten.SetWindowSize(1280, 720)
-	ebiten.SetWindowTitle("Tiled Test Game")
 	g = &game.Game{
 		World: &ecs.World{},
 	}
+	g.AddActorES(actorSystem)
+}
+
+func GetSubImageFromTileset(t tiled.TileSet, index int) *image.Image {
+	xi := ((index - 1) % t.Columns) * t.TileWidth
+	yi := ((index - 1) / t.Columns) * t.TileHeight
+	sub := tilesImage.SubImage(image.Rect(xi, yi, xi+t.TileWidth, yi+t.TileHeight))
+	return &sub
+}
+
+func main() {
+	ebiten.SetWindowSize(1920, 1080)
+	ebiten.SetWindowTitle("Tiled Test Game")
+
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
