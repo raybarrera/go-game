@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"go-game/internal/game"
 	"go-game/pkg/ecs"
 	"go-game/pkg/tiled"
@@ -11,6 +9,9 @@ import (
 	"image"
 	_ "image/png"
 	"log"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 var TileMap tiled.TileMap
@@ -66,7 +67,7 @@ func GetSubImageFromTileset(t tiled.TileSet, index int) *image.Image {
 }
 
 func main() {
-	ebiten.SetWindowSize(1920, 1080)
+	ebiten.SetWindowSize(1280, 720)
 	ebiten.SetWindowTitle("Tiled Test Game")
 
 	if err := ebiten.RunGame(g); err != nil {
