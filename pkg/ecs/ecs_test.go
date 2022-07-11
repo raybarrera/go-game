@@ -1,17 +1,19 @@
 package ecs
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
 
-func TestEntityManager_Queries(t *testing.T) {
+func TestWorld_EntityManager_Queries(t *testing.T) {
 	t.Run("Test queries work", func(t *testing.T) {
+		id := NewId()
+		expectedString := "abc"
+		expectedLength := 1
 		sut := &World{
 			EntityManager: EntityManager{
 				Entities: map[Id][]interface{}{
-					NewId(): {""},
+					id: {expectedString},
 				},
 			},
 		}
@@ -22,13 +24,19 @@ func TestEntityManager_Queries(t *testing.T) {
 		if result == nil {
 			t.Errorf("Something")
 		}
-		for key, val := range result {
-			fmt.Println(fmt.Sprintf("%v, %v", key.String(), val))
+		if result[id] == nil {
+			t.Errorf("ID not found in from query")
+		}
+		if len(result[id]) < expectedLength {
+			t.Errorf("Incorrect length in the result array")
+		}
+		if result[id][0] != expectedString {
+			t.Errorf("Wanted \"%v\" in the 0 position of the result, got \"%v\"", expectedString, result[id][0])
 		}
 	})
 }
 
-func TestWorld_QueryEntities(t *testing.T) {
+func TestWorld_QueryEntities_OLD(t *testing.T) {
 	type args struct {
 		components []reflect.Type
 	}
