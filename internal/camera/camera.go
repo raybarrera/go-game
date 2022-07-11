@@ -20,7 +20,7 @@ func (c *Camera) String() string {
 }
 
 func (c *Camera) ViewPortCenter() f64.Vec2 {
-	return f64.vec2{
+	return f64.Vec2{
 		c.ViewPort[0] * 0.5,
 		c.ViewPort[1] * 0.5,
 	}
