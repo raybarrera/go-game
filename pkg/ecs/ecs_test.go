@@ -34,6 +34,27 @@ func TestWorld_EntityManager_Queries(t *testing.T) {
 			t.Errorf("Wanted \"%v\" in the 0 position of the result, got \"%v\"", expectedString, result[id][0])
 		}
 	})
+	t.Run("Test multiple matching entities in query", func(t *testing.T) {
+		sut := &World{
+			EntityManager: EntityManager{
+				Entities: map[Id][]interface{}{
+					NewId(): {""},
+					NewId(): {2.0},
+					NewId(): {3.0},
+				},
+			},
+		}
+		result, err := sut.QueryEntities(reflect.TypeOf(0.0))
+		if err != nil {
+			t.Errorf(err.Error())
+		}
+		if result == nil {
+			t.Errorf("Nil result")
+		}
+		if len(result) != 2 {
+			t.Errorf("Incorrect length in the result array, wanted %v, got %v", 2, len(result))
+		}
+	})
 }
 
 func TestWorld_QueryEntities_OLD(t *testing.T) {
@@ -97,6 +118,34 @@ func TestWorld_QueryEntities_OLD(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("World.QueryEntities() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestContainsType(t *testing.T) {
+	type args struct {
+		arr   []interface{}
+		check reflect.Type
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Test simple case, give string, get string",
+			args: args{
+				arr:   []interface{}{""},
+				check: reflect.TypeOf(""),
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ContainsType(tt.args.arr, tt.args.check); got != tt.want {
+				t.Errorf("ContainsType() = %v, want %v", got, tt.want)
 			}
 		})
 	}

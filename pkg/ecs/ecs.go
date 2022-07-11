@@ -58,14 +58,17 @@ func (w *World) Update(deltaTime float64) {
 // albeit, purely based on the public API since AFAIK, the implementation is closed-source.
 func (w *World) QueryEntities(components ...reflect.Type) (map[Id][]interface{}, error) {
 	entities := map[Id][]interface{}{}
+	ok := false
 	for key, e := range w.EntityManager.Entities {
 		for _, c := range components {
-			ok := ContainsType(e, c)
+			ok = ContainsType(e, c)
 			if !ok {
 				break
 			}
 		}
-		entities[key] = e
+		if ok {
+			entities[key] = e
+		}
 	}
 	//for _, c := range components {
 	//	for key, elem := range w.EntityManager.Entities {
@@ -95,7 +98,7 @@ func hash(components ...interface{}) []byte {
 
 func ContainsType(arr []interface{}, check reflect.Type) bool {
 	for _, e := range arr {
-		if e == check {
+		if reflect.TypeOf(e) == check {
 			return true
 		}
 	}
