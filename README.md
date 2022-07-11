@@ -3,7 +3,12 @@ Simple demo game used to demonstrate a superset of game dev tools on top of `Ebi
 
 ## 🏗️ ECS
 
+## 📹 Camera-based Rendering
+- Based on ebiten official example: https://github.com/hajimehoshi/ebiten/blob/main/examples/camera/main.go
+- ECS compatible
+
 ## 🗺️ Tiled Support
+- ECS compatible
 
 ## 👾 Debug Console
 
