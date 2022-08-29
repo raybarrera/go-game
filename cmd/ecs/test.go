@@ -5,6 +5,7 @@ import (
 	"go-game/internal/camera"
 	_ "image/png"
 	"log"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -13,6 +14,7 @@ import (
 
 var game *Game
 var gopherImage *ebiten.Image
+var previousFrameTime = time.Now()
 
 type Game struct {
 	Cms CameraMovementSystem
@@ -28,9 +30,9 @@ func init() {
 		cameraData: &camera.Camera{},
 		mover: &CameraMover{
 			targetPosition: f64.Vec2{
-				200, 1,
+				-10, 1,
 			},
-			speed: 0.01,
+			speed: 2,
 		},
 	}
 	cms.cameraData.Reset()
@@ -48,14 +50,9 @@ func main() {
 }
 
 func (g *Game) Update() error {
-	fps := ebiten.CurrentTPS()
-	fmt.Println(fps)
-	if fps < 1 {
-		fps = 1
-	}
-	dt := 1.00 / fps
+	dt := float64(time.Since(previousFrameTime).Seconds())
+	previousFrameTime = time.Now()
 	g.Cms.Update(dt)
-	fmt.Println(dt)
 	return nil
 }
 
@@ -78,11 +75,6 @@ type CameraMovementSystem struct {
 }
 
 func (c *CameraMovementSystem) Update(dt float64) {
-	direction := f64.Vec2{
-		(c.mover.targetPosition[0] - c.cameraData.Position[0]) * dt * c.mover.speed,
-		(c.mover.targetPosition[1] - c.cameraData.Position[1]) * dt * c.mover.speed,
-	}
-	fmt.Println(direction)
-	c.cameraData.Position[0] += direction[0]
-	c.cameraData.Position[1] += direction[1]
+	c.cameraData.Position[0] += c.mover.targetPosition[0] * dt * c.mover.speed
+	c.cameraData.Position[1] += c.mover.targetPosition[1] * dt * c.mover.speed
 }
