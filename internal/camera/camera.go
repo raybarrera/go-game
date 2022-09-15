@@ -68,6 +68,7 @@ type Mover struct {
 }
 
 type CameraMovementSystem struct {
+	//TODO This code needs to be moved so that the Update method is in charge of fetching all the matching entities with matching types. Right now, we'd need to create a system instance for each camera (or entity) we want to update. Instead, the system should find and operate on the entities on its own.
 	CameraData *Camera
 	Mover      *Mover
 }
