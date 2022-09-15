@@ -61,3 +61,18 @@ func (c *Camera) Reset() {
 	c.Rotation = 0
 	c.ZoomFactor = 0
 }
+
+type Mover struct {
+	TargetPosition f64.Vec2
+	Velocity       float64
+}
+
+type CameraMovementSystem struct {
+	CameraData *Camera
+	Mover      *Mover
+}
+
+func (c *CameraMovementSystem) Update(dt float64) {
+	c.CameraData.Position[0] += c.Mover.TargetPosition[0] * dt * c.Mover.Velocity
+	c.CameraData.Position[1] += c.Mover.TargetPosition[1] * dt * c.Mover.Velocity
+}

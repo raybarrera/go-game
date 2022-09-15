@@ -17,7 +17,7 @@ var gopherImage *ebiten.Image
 var previousFrameTime = time.Now()
 
 type Game struct {
-	Cms CameraMovementSystem
+	Cms camera.CameraMovementSystem
 }
 
 func init() {
@@ -26,24 +26,24 @@ func init() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	cms := CameraMovementSystem{
-		cameraData: &camera.Camera{},
-		mover: &CameraMover{
-			targetPosition: f64.Vec2{
-				-10, 1,
+	cms := camera.CameraMovementSystem{
+		CameraData: &camera.Camera{},
+		Mover: &camera.Mover{
+			TargetPosition: f64.Vec2{
+				-10, -2,
 			},
-			speed: 2,
+			Velocity: 2,
 		},
 	}
-	cms.cameraData.Reset()
+	cms.CameraData.Reset()
 	game = &Game{
 		Cms: cms,
 	}
 }
 
 func main() {
-	ebiten.SetWindowSize(640, 480)
-	ebiten.SetWindowTitle("Camera System Test")
+	ebiten.SetWindowSize(1280, 720)
+	ebiten.SetWindowTitle("ECS Camera System Test")
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}
@@ -57,24 +57,9 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	g.Cms.cameraData.Render(gopherImage, screen)
+	g.Cms.CameraData.Render(gopherImage, screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 640, 480
-}
-
-type CameraMover struct {
-	targetPosition f64.Vec2
-	speed          float64
-}
-
-type CameraMovementSystem struct {
-	cameraData *camera.Camera
-	mover      *CameraMover
-}
-
-func (c *CameraMovementSystem) Update(dt float64) {
-	c.cameraData.Position[0] += c.mover.targetPosition[0] * dt * c.mover.speed
-	c.cameraData.Position[1] += c.mover.targetPosition[1] * dt * c.mover.speed
+	return 1280, 720
 }
