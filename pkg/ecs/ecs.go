@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"github.com/google/uuid"
 	"reflect"
+
+	"github.com/google/uuid"
 )
 
 type Id uuid.UUID
@@ -14,13 +15,19 @@ func (id Id) String() string {
 	return uuid.UUID(id).String()
 }
 
-func NewId() Id {
+func newId() Id {
 	id, _ := uuid.NewUUID()
 	return Id(id)
 }
 
 type Entity struct {
 	Id
+}
+
+func NewEntity() *Entity {
+	return &Entity{
+		Id: newId(),
+	}
 }
 
 // SystemUpdater processes an update/logic on a given collection of components
@@ -43,6 +50,10 @@ func (w *World) AddSystem(system SystemUpdater) {
 // Systems is a getter for the world's []Systems slice
 func (w *World) Systems() []SystemUpdater {
 	return w.Systems()
+}
+
+func (w *World) CreateEntity(components []interface{}) {
+	w.EntityManager.Entities[NewEntity().Id] = components
 }
 
 // Update calls update on all the systems managed by this world.

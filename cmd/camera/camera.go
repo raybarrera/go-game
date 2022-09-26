@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"go-game/internal/camera"
-	_ "image/png"
+	"go-game/internal/game"
 	"log"
 	"time"
 
@@ -12,13 +12,9 @@ import (
 	"golang.org/x/image/math/f64"
 )
 
-var game *Game
+var gogame *game.EcsGame
 var gopherImage *ebiten.Image
 var previousFrameTime = time.Now()
-
-type Game struct {
-	Cms camera.CameraMovementSystem
-}
 
 func init() {
 	var err error
@@ -36,30 +32,17 @@ func init() {
 		},
 	}
 	cms.CameraData.Reset()
-	game = &Game{
-		Cms: cms,
-	}
+	gogame = game.NewEcsGame()
+	gogame.World.AddSystem(&cms)
+	gogame.WindowWidth = 1280
+	gogame.WindowHeight = 720
+
 }
 
 func main() {
-	ebiten.SetWindowSize(1280, 720)
+	ebiten.SetWindowSize(gogame.WindowWidth, gogame.WindowHeight)
 	ebiten.SetWindowTitle("ECS Camera System Test")
-	if err := ebiten.RunGame(game); err != nil {
+	if err := ebiten.RunGame(gogame); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func (g *Game) Update() error {
-	dt := float64(time.Since(previousFrameTime).Seconds())
-	previousFrameTime = time.Now()
-	g.Cms.Update(dt)
-	return nil
-}
-
-func (g *Game) Draw(screen *ebiten.Image) {
-	g.Cms.CameraData.Render(gopherImage, screen)
-}
-
-func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 1280, 720
 }
