@@ -1,5 +1,11 @@
 package transform
 
+type Transform struct {
+	Position PositionComponent
+	Rotation RotationComponent
+	Scale    ScaleComponent
+}
+
 // PositionComponent contains the x and y coordinates of an entity
 type PositionComponent struct {
 	X float64
