@@ -6,10 +6,11 @@ import (
 )
 
 func Test(t *testing.T) {
-
 	t.Run("some test", func(t *testing.T) {
-		f := func(i, j int) { print("s:") }
-		e := ForEach(f)
+		w := NewWorld()
+		w.CreateEntity([]interface{}{1})
+		f := func(j int) { print("s:") }
+		e := w.ForEach(f)
 		if e != nil {
 			t.Error(e)
 		}
