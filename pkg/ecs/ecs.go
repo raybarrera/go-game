@@ -3,31 +3,25 @@ package ecs
 import (
 	"bytes"
 	"encoding/gob"
+	"errors"
 	"fmt"
 	"reflect"
 
 	"github.com/google/uuid"
 )
 
-type Id uuid.UUID
+type Entity uuid.UUID
 
-func (id Id) String() string {
+func (id Entity) String() string {
 	return uuid.UUID(id).String()
 }
 
-func newId() Id {
+func NewEntity() Entity {
 	id, _ := uuid.NewUUID()
-	return Id(id)
+	return Entity(id)
 }
 
-type Entity struct {
-	Id
-}
-
-func NewEntity() *Entity {
-	return &Entity{
-		Id: newId(),
-	}
+type EntityCollection struct {
 }
 
 // SystemUpdater processes an update/logic on a given collection of components
@@ -53,7 +47,7 @@ func (w *World) Systems() []SystemUpdater {
 }
 
 func (w *World) CreateEntity(components []interface{}) {
-	w.EntityManager.Entities[NewEntity().Id] = components
+	w.EntityManager.Entities[NewEntity()] = components
 }
 
 // Update calls update on all the systems managed by this world.
@@ -63,13 +57,22 @@ func (w *World) Update(deltaTime float64) {
 	}
 }
 
-// QueryEntities returns a slice of Entities matching the given components
+type entityQueryFunc func(...interface{})
+
+func Foreach(queryAction ...interface{}) error {
+	n := reflect.TypeOf(queryAction[0])
+	res := fmt.Sprintf("Type %v", n.In(0))
+
+	return errors.New(res)
+}
+
+// ueryEntities returns a slice of Entities matching the given components
 //
 // This functionality is loosely based on Unity's ECS EntityQuery implementation
 // albeit, purely based on the public API since AFAIK, the implementation is closed-source.
-func (w *World) QueryEntities(components ...reflect.Type) (map[Id][]interface{}, error) {
-	entities := map[Id][]interface{}{}
-	ok := false
+func (w *World) QueryEntities(components ...reflect.Type) (EntityCollection, error) {
+	var matchingEntities []Entity
+	var ok bool
 	for key, e := range w.EntityManager.Entities {
 		for _, c := range components {
 			ok = ContainsType(e, c)
@@ -77,24 +80,15 @@ func (w *World) QueryEntities(components ...reflect.Type) (map[Id][]interface{},
 				break
 			}
 		}
-		if ok {
-			entities[key] = e
-		}
+		matchingEntities = append(matchingEntities, key)
 	}
-	//for _, c := range components {
-	//	for key, elem := range w.EntityManager.Entities {
-	//		_, ok := ContainsElement(elem, c)
-	//		if ok {
-	//			entities = append(entities, key)
-	//		}
-	//	}
-	//}
-	return entities, nil
+	return EntityCollection{}, nil
+
 }
 
 type EntityManager struct {
 	// Entities maps an entity (an uuid, essentially) to a slice of components (data/structs)
-	Entities map[Id][]interface{}
+	Entities map[Entity][]interface{}
 }
 
 func hash(components ...interface{}) []byte {
