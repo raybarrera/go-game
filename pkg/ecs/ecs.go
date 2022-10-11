@@ -59,9 +59,13 @@ func (w *World) Update(deltaTime float64) {
 
 type entityQueryFunc func(...interface{})
 
-func Foreach(queryAction ...interface{}) error {
-	n := reflect.TypeOf(queryAction[0])
-	res := fmt.Sprintf("Type %v", n.In(0))
+func ForEach(queryAction ...interface{}) error {
+	t := reflect.TypeOf(queryAction[0])
+	i := t.NumIn()
+	res := ""
+	for count := 0; count < i; count++ {
+		res += fmt.Sprintf("Type %v \n", t.In(count))
+	}
 
 	return errors.New(res)
 }

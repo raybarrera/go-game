@@ -9,7 +9,7 @@ func Test(t *testing.T) {
 
 	t.Run("some test", func(t *testing.T) {
 		f := func(i, j int) { print("s:") }
-		e := Foreach(f)
+		e := ForEach(f)
 		if e != nil {
 			t.Error(e)
 		}
