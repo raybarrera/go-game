@@ -3,7 +3,6 @@ package ecs
 import (
 	"bytes"
 	"encoding/gob"
-	"errors"
 	"fmt"
 	"reflect"
 
@@ -59,28 +58,15 @@ func (w *World) CreateEntity(components []interface{}) {
 	w.EntityManager.Entities[NewEntity()] = components
 }
 
+func (w *World) GetSystemByComponents(components ...reflect.Type) SystemUpdater {
+	return nil
+}
+
 // Update calls update on all the systems managed by this world.
 func (w *World) Update(deltaTime float64) {
 	for _, system := range w.SystemUpdaters {
 		system.Update(deltaTime)
 	}
-}
-
-type entityQueryFunc func(...interface{})
-
-func (w *World) ForEach(queryAction ...interface{}) error {
-	t := reflect.TypeOf(queryAction[0])
-	i := t.NumIn()
-	res := ""
-	components := make([]reflect.Type, i)
-	for count := 0; count < i; count++ {
-		components = append(components, t.In(count))
-		res += fmt.Sprintf("Type %v \n", t.In(count))
-	}
-	res += fmt.Sprintf("components: %v ", components)
-
-	w.QueryEntities(components...)
-	return errors.New(res)
 }
 
 // ueryEntities returns a slice of Entities matching the given components

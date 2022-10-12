@@ -9,11 +9,6 @@ func Test(t *testing.T) {
 	t.Run("some test", func(t *testing.T) {
 		w := NewWorld()
 		w.CreateEntity([]interface{}{1})
-		f := func(j int) { print("s:") }
-		e := w.ForEach(f)
-		if e != nil {
-			t.Error(e)
-		}
 	})
 }
 
