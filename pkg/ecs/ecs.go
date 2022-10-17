@@ -58,10 +58,6 @@ func (w *World) CreateEntity(components []interface{}) {
 	w.EntityManager.Entities[NewEntity()] = components
 }
 
-func (w *World) GetSystemByComponents(components ...reflect.Type) SystemUpdater {
-	return nil
-}
-
 // Update calls update on all the systems managed by this world.
 func (w *World) Update(deltaTime float64) {
 	for _, system := range w.SystemUpdaters {
@@ -69,7 +65,11 @@ func (w *World) Update(deltaTime float64) {
 	}
 }
 
-// ueryEntities returns a slice of Entities matching the given components
+func (w *World) AddComponent(component interface{}, toEntity Entity) {}
+
+func (w *World) modifyRegisteredEntity(entity Entity, newTemplate ...reflect.Type) {}
+
+// QueryEntities returns a slice of Entities matching the given components
 //
 // This functionality is loosely based on Unity's ECS EntityQuery implementation
 // albeit, purely based on the public API since AFAIK, the implementation is closed-source.
@@ -87,6 +87,19 @@ func (w *World) QueryEntities(components ...reflect.Type) (EntityCollection, err
 	}
 	return EntityCollection{}, nil
 
+}
+
+// Template contains a combination of types shared by various Entities.
+// Definition maps a type to a slice of elements of that type.
+// The definition keys array can be used to query based on component types.
+type Template struct {
+	Id         int
+	Definition map[reflect.Type][]interface{}
+}
+
+// componentStore maps the addresses of its components in the template store.
+type componentStore struct {
+	Entities map[Entity][]int
 }
 
 type EntityManager struct {
