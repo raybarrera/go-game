@@ -89,17 +89,24 @@ func (w *World) QueryEntities(components ...reflect.Type) (EntityCollection, err
 
 }
 
-// Template contains a combination of types shared by various Entities.
+// ComponentCollection contains a combination of types shared by various Entities.
 // Definition maps a type to a slice of elements of that type.
 // The definition keys array can be used to query based on component types.
-type Template struct {
+type ComponentCollection struct {
 	Id         int
 	Definition map[reflect.Type][]interface{}
 }
 
-// componentStore maps the addresses of its components in the template store.
-type componentStore struct {
-	Entities map[Entity][]int
+func (c *ComponentCollection) hasComponentType(check reflect.Type) bool {
+	if _, ok := c.Definition[check]; ok {
+		return true
+	}
+	return false
+}
+
+type enitityComponentLocation struct {
+	ComponentMap *map[reflect.Type][]interface{}
+	Index        int
 }
 
 type EntityManager struct {
