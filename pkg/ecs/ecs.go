@@ -33,6 +33,7 @@ type SystemUpdater interface {
 type World struct {
 	SystemUpdaters []SystemUpdater
 	EntityManager  EntityManager
+	Archetypes     []Archetype
 }
 
 func NewWorld() *World {
@@ -65,7 +66,7 @@ func (w *World) Update(deltaTime float64) {
 	}
 }
 
-func (w *World) AddComponent(component interface{}, toEntity Entity) {}
+func (w *World) AddComponent(component any, toEntity Entity) {}
 
 func (w *World) modifyRegisteredEntity(entity Entity, newTemplate ...reflect.Type) {}
 
@@ -89,24 +90,17 @@ func (w *World) QueryEntities(components ...reflect.Type) (EntityCollection, err
 
 }
 
-// ComponentCollection contains a combination of types shared by various Entities.
+// Archetype contains a combination of types shared by various Entities.
 // Definition maps a type to a slice of elements of that type.
 // The definition keys array can be used to query based on component types.
-type ComponentCollection struct {
-	Id         int
-	Definition map[reflect.Type][]interface{}
+type Archetype struct {
+	Id         string
+	Definition map[reflect.Type][]any
 }
 
-func (c *ComponentCollection) hasComponentType(check reflect.Type) bool {
-	if _, ok := c.Definition[check]; ok {
-		return true
-	}
-	return false
-}
-
-type enitityComponentLocation struct {
-	ComponentMap *map[reflect.Type][]interface{}
-	Index        int
+// componentStore maps an entity to an array of of indices corresponding to the location
+type EntityComponentStore struct {
+	Entities map[Entity]map[reflect.Type]int
 }
 
 type EntityManager struct {
