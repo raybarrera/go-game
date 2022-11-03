@@ -114,7 +114,7 @@ type EntityManager struct {
 	Entities map[Entity][]interface{}
 }
 
-func hash(components ...interface{}) uint32 {
+func componentsToHash(components ...interface{}) uint32 {
 	h := fnv.New32()
 	var sum uint32 = 0
 	for _, v := range components {
