@@ -5,6 +5,25 @@ import (
 	"testing"
 )
 
+func TeshHash_IsDeterministic(t *testing.T) {
+	a := hash("s")
+	b := hash("s")
+
+	if ok := int(a) == int(b); !ok {
+		t.Errorf("Expected %v, got %v \n", true, ok)
+	}
+}
+
+func TestHash_HashingMultipleTimesReturnsSameResult(t *testing.T) {
+	a := hash("s")
+	b := hash("s")
+	b = hash("s")
+
+	if ok := a == b; !ok {
+		t.Errorf("Expected %v, got %v \n", true, ok)
+	}
+}
+
 func Test(t *testing.T) {
 	t.Run("some test", func(t *testing.T) {
 		w := NewWorld()

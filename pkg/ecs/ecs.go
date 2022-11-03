@@ -1,9 +1,7 @@
 package ecs
 
 import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
+	"hash/fnv"
 	"reflect"
 
 	"github.com/google/uuid"
@@ -95,7 +93,15 @@ func (w *World) QueryEntities(components ...reflect.Type) (EntityCollection, err
 // The definition keys array can be used to query based on component types.
 type Archetype struct {
 	Id         string
-	Definition map[reflect.Type][]any
+	definition map[reflect.Type][]any
+}
+
+func NewArchetype[T []any](componentTypes T) *Archetype {
+	return nil
+}
+
+func NewArchetypeId[T []any](componentTypes T) string {
+	return ""
 }
 
 // componentStore maps an entity to an array of of indices corresponding to the location
@@ -108,14 +114,15 @@ type EntityManager struct {
 	Entities map[Entity][]interface{}
 }
 
-func hash(components ...interface{}) []byte {
-	var b bytes.Buffer
-	err := gob.NewEncoder(&b).Encode(components)
-	if err != nil {
-		fmt.Println(err)
-		return nil
+func hash(components ...interface{}) uint32 {
+	h := fnv.New32()
+	var sum []byte = make([]byte, 0)
+	for _, v := range components {
+		h.Write([]byte(reflect.TypeOf(v).Name()))
+		sum = h.Sum([]byte(reflect.TypeOf(v).Name()))
+		h.Write(sum)
 	}
-	return b.Bytes()
+	return h.Sum32()
 }
 
 func ContainsType(arr []interface{}, check reflect.Type) bool {
