@@ -116,13 +116,15 @@ type EntityManager struct {
 
 func hash(components ...interface{}) uint32 {
 	h := fnv.New32()
-	var sum []byte = make([]byte, 0)
+	var sum uint32 = 0
 	for _, v := range components {
-		h.Write([]byte(reflect.TypeOf(v).Name()))
-		sum = h.Sum([]byte(reflect.TypeOf(v).Name()))
-		h.Write(sum)
+		h.Reset()
+		name := []byte(reflect.TypeOf(v).Name())
+		h.Write(name)
+		sum += h.Sum32()
 	}
-	return h.Sum32()
+
+	return sum
 }
 
 func ContainsType(arr []interface{}, check reflect.Type) bool {

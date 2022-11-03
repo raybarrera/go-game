@@ -24,6 +24,61 @@ func TestHash_HashingMultipleTimesReturnsSameResult(t *testing.T) {
 	}
 }
 
+func TestHash_UsingMultipleInputsOfSameType(t *testing.T) {
+	a := hash("s", "D")
+	b := hash("s", "D")
+	if ok := a == b; !ok {
+		t.Errorf("Expected %v, got %v \n", true, ok)
+	}
+}
+
+func TestHash_UsingMultipleInputsOfDifferentType(t *testing.T) {
+	a := hash("s", 1)
+	b := hash("s", 1)
+	if ok := a == b; !ok {
+		t.Errorf("Expected %v, got %v \n", true, ok)
+	}
+}
+
+func TestHash_UsingMultipleInputsOfDifferentTypeDifferentOrder(t *testing.T) {
+	a := hash("s", 1)
+	b := hash(1, "s")
+	if ok := a == b; !ok {
+		t.Errorf("Expected %v, got %v \n", true, ok)
+	}
+}
+
+func TestHash_UsingMultipleInputsOfDifferentTypesMismatch(t *testing.T) {
+	a := hash("s", 1.5)
+	b := hash(1, "s")
+	if ok := a != b; !ok {
+		t.Errorf("Expected %v, got %v \n", true, ok)
+	}
+}
+
+func TestHash_MismatchedArgumentCountBreaks(t *testing.T) {
+	a := hash("s", 1, "d")
+	b := hash(1, "s")
+	if ok := a != b; !ok {
+		t.Errorf("Expected %v, got %v \n", true, ok)
+	}
+}
+
+func TestHash_UsingMultipleInputsOfSameTypeWithDiffrerentOrder(t *testing.T) {
+	a := hash("s", "D")
+	b := hash("D", "s")
+	if ok := a == b; !ok {
+		t.Errorf("Expected %v, got %v \n", true, ok)
+	}
+}
+func TestHash_UsingMultipleInputsOfSameTypeWithDiffrerentOrderInverse(t *testing.T) {
+	a := hash("s", "d")
+	b := hash("D", "s")
+	if ok := a == b; !ok {
+		t.Errorf("Expected %v, got %v \n", true, ok)
+	}
+}
+
 func Test(t *testing.T) {
 	t.Run("some test", func(t *testing.T) {
 		w := NewWorld()
