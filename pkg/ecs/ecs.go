@@ -1,19 +1,21 @@
 package ecs
 
 import (
+	"fmt"
 	"hash/fnv"
 	"reflect"
 
 	"github.com/google/uuid"
 )
 
+// Entity is a uuid. Conceptually, however, an entity is defined by the components it's comprised of.
 type Entity uuid.UUID
 
 func (id Entity) String() string {
 	return uuid.UUID(id).String()
 }
 
-func NewEntity() Entity {
+func NewEntityId() Entity {
 	id, _ := uuid.NewUUID()
 	return Entity(id)
 }
@@ -31,7 +33,7 @@ type SystemUpdater interface {
 type World struct {
 	SystemUpdaters []SystemUpdater
 	EntityManager  EntityManager
-	Archetypes     []Archetype
+	Archetypes     map[uint32]Archetype
 }
 
 func NewWorld() *World {
@@ -53,9 +55,35 @@ func (w *World) Systems() []SystemUpdater {
 	return w.Systems()
 }
 
-func (w *World) CreateEntity(components []interface{}) {
-	w.EntityManager.Entities[NewEntity()] = components
+func (w *World) CreateEntity(components []any) {
+	h := componentsToHash(components)
+	var arch *Archetype
+	if val, ok := w.Archetypes[h]; ok {
+		// Create the archetype
+		arch = &val
+	} else {
+		// create entity (the id)
+	}
+	fmt.Println(arch)
+	// store components
 }
+
+func AddComponent[T any](to Entity, component T) {
+	//TODO: Calculate old archetype
+	//TODO: Calculate new archetype
+	//TODO: Migrate to new archetype
+}
+
+// RemoveComponentOfType TODO needs to figure out what happens when we have multiple components of the same type
+func RemoveComponentOfType[T reflect.Type](from Entity, component T) {
+
+	//TODO: Calculate old archetype
+	//TODO: Calculate new archetype
+	//TODO: Remove target component
+	//TODO: Migrate to new archetype
+}
+
+func BatchRemoveComponent(from Entity, components ...any) {}
 
 // Update calls update on all the systems managed by this world.
 func (w *World) Update(deltaTime float64) {
@@ -92,7 +120,7 @@ func (w *World) QueryEntities(components ...reflect.Type) (EntityCollection, err
 // Definition maps a type to a slice of elements of that type.
 // The definition keys array can be used to query based on component types.
 type Archetype struct {
-	Id         string
+	Id         uint32
 	definition map[reflect.Type][]any
 }
 
@@ -100,13 +128,19 @@ func NewArchetype[T []any](componentTypes T) *Archetype {
 	return nil
 }
 
-func NewArchetypeId[T []any](componentTypes T) string {
-	return ""
+func NewArchetypeId[T []any](componentTypes T) uint32 {
+	id := componentsToHash(componentTypes)
+	return id
 }
 
-// componentStore maps an entity to an array of of indices corresponding to the location
+type componentLocator struct {
+	Archetype *Archetype
+	Location  map[reflect.Type]int
+}
+
+// EntityComponentStore componentStore maps an entity to an array of indices corresponding to the location
 type EntityComponentStore struct {
-	Entities map[Entity]map[reflect.Type]int
+	Entities map[Entity]componentLocator
 }
 
 type EntityManager struct {
