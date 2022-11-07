@@ -35,6 +35,7 @@ type World struct {
 func NewWorld() *World {
 	return &World{
 		SystemUpdaters: make([]SystemUpdater, 0, 10),
+		ArchetypeStore: make(map[uint32]Archetype),
 	}
 }
 
@@ -52,16 +53,20 @@ func (w *World) CreateEntity(components []any) {
 	h := componentsToHash(components...)
 	var arch *Archetype
 	if val, ok := w.ArchetypeStore[h]; ok {
+		fmt.Println("Found arch")
 		arch = &val
 	} else {
+		fmt.Println("Creating arch entry")
 		var types []reflect.Type
 		for _, v := range components {
 			types = append(types, reflect.TypeOf(v))
 		}
 		arch = NewArchetype(h, types...)
 	}
+	//fmt.Println(arch.String())
+	arch.AddEntity(components)
+	w.ArchetypeStore[h] = *arch
 	fmt.Println(arch.String())
-	// store components
 }
 
 func AddComponent[T any](to Entity, component T) {
@@ -108,7 +113,7 @@ func NewArchetype(id uint32, componentTypes ...reflect.Type) *Archetype {
 		definition: make(map[reflect.Type][]any),
 	}
 	for _, v := range componentTypes {
-		a.definition[v] = make([]any, 0)
+		a.definition[v] = make([]any, 1)
 	}
 	return &a
 }
@@ -143,13 +148,14 @@ func (a *Archetype) AddEntity(components []any) {
 func (a *Archetype) GetNextIndex() int {
 	next := a.NextIndex
 	for _, v := range a.definition {
-		if len(v) <= 0 {
-			break
-		}
-		if v[next] == nil {
-			break
-		}
 		isFull := true
+		if len(v) <= 0 {
+			isFull = true
+			break
+		}
+		if len(v) < next && v[next] == nil {
+			break
+		}
 		for i, elem := range v {
 			if elem == nil {
 				isFull = false

@@ -12,6 +12,7 @@ func main() {
 	world.CreateEntity([]any{1})
 	world.CreateEntity([]any{1, "something"})
 	world.CreateEntity([]any{func() {}, 1, &SystemComponents{}})
+	world.CreateEntity([]any{func() {}, 1, &SystemComponents{}})
 	RunTest()
 }
 
