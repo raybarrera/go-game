@@ -20,9 +20,6 @@ func NewEntityId() Entity {
 	return Entity(id)
 }
 
-type EntityCollection struct {
-}
-
 // SystemUpdater processes an update/logic on a given collection of components
 type SystemUpdater interface {
 	Update(deltaTime float64)
@@ -32,16 +29,12 @@ type SystemUpdater interface {
 // TODO: Entities is not in use. Right now entities are arrays inside of systems, not the world. Pick a lane.
 type World struct {
 	SystemUpdaters []SystemUpdater
-	EntityManager  EntityManager
-	Archetypes     map[uint32]Archetype
+	ArchetypeStore map[uint32]Archetype
 }
 
 func NewWorld() *World {
 	return &World{
 		SystemUpdaters: make([]SystemUpdater, 0, 10),
-		EntityManager: EntityManager{
-			Entities: map[Entity][]interface{}{},
-		},
 	}
 }
 
@@ -56,15 +49,18 @@ func (w *World) Systems() []SystemUpdater {
 }
 
 func (w *World) CreateEntity(components []any) {
-	h := componentsToHash(components)
+	h := componentsToHash(components...)
 	var arch *Archetype
-	if val, ok := w.Archetypes[h]; ok {
-		// Create the archetype
+	if val, ok := w.ArchetypeStore[h]; ok {
 		arch = &val
 	} else {
-		// create entity (the id)
+		var types []reflect.Type
+		for _, v := range components {
+			types = append(types, reflect.TypeOf(v))
+		}
+		arch = NewArchetype(h, types...)
 	}
-	fmt.Println(arch)
+	fmt.Println(arch.String())
 	// store components
 }
 
@@ -92,27 +88,7 @@ func (w *World) Update(deltaTime float64) {
 	}
 }
 
-func (w *World) AddComponent(component any, toEntity Entity) {}
-
-func (w *World) modifyRegisteredEntity(entity Entity, newTemplate ...reflect.Type) {}
-
-// QueryEntities returns a slice of Entities matching the given components
-//
-// This functionality is loosely based on Unity's ECS EntityQuery implementation
-// albeit, purely based on the public API since AFAIK, the implementation is closed-source.
-func (w *World) QueryEntities(components ...reflect.Type) (EntityCollection, error) {
-	var matchingEntities []Entity
-	var ok bool
-	for key, e := range w.EntityManager.Entities {
-		for _, c := range components {
-			ok = ContainsType(e, c)
-			if !ok {
-				break
-			}
-		}
-		matchingEntities = append(matchingEntities, key)
-	}
-	return EntityCollection{}, nil
+func ForEach[T any](f func(T)) {
 
 }
 
@@ -121,11 +97,73 @@ func (w *World) QueryEntities(components ...reflect.Type) (EntityCollection, err
 // The definition keys array can be used to query based on component types.
 type Archetype struct {
 	Id         uint32
+	NextIndex  int
 	definition map[reflect.Type][]any
 }
 
-func NewArchetype[T []any](componentTypes T) *Archetype {
-	return nil
+func NewArchetype(id uint32, componentTypes ...reflect.Type) *Archetype {
+	a := Archetype{
+		Id:         id,
+		NextIndex:  0,
+		definition: make(map[reflect.Type][]any),
+	}
+	for _, v := range componentTypes {
+		a.definition[v] = make([]any, 0)
+	}
+	return &a
+}
+
+func (a *Archetype) String() string {
+	s := ""
+	s += fmt.Sprintf("Archetype ID: %v\n", a.Id)
+	for k, v := range a.definition {
+		s += fmt.Sprintf("| type: %v | items: %v |\n", k.String(), len(v))
+	}
+	s += fmt.Sprintf("| NextIndex: %v | Valid: %v |\n", a.NextIndex, a.GetNextIndex())
+	return s
+}
+
+func (a *Archetype) AddEntity(components []any) {
+	appendMode := false
+	if isFull := a.GetNextIndex() == -1; isFull {
+		appendMode = true
+	}
+	for _, v := range components {
+		t := reflect.TypeOf(v)
+		if appendMode {
+			a.definition[t] = append(a.definition[t], v)
+		} else {
+			a.definition[t][a.NextIndex] = v
+		}
+
+	}
+	a.NextIndex++
+}
+
+func (a *Archetype) GetNextIndex() int {
+	next := a.NextIndex
+	for _, v := range a.definition {
+		if len(v) <= 0 {
+			break
+		}
+		if v[next] == nil {
+			break
+		}
+		isFull := true
+		for i, elem := range v {
+			if elem == nil {
+				isFull = false
+				next = i
+				break
+			}
+		}
+		if isFull {
+			a.NextIndex = len(v)
+			next = -1
+		}
+		break
+	}
+	return next
 }
 
 func NewArchetypeId[T []any](componentTypes T) uint32 {
@@ -133,19 +171,15 @@ func NewArchetypeId[T []any](componentTypes T) uint32 {
 	return id
 }
 
+// componentLocator stores a pointer to the archetype that hold the entity and its index in the slice
 type componentLocator struct {
 	Archetype *Archetype
-	Location  map[reflect.Type]int
+	Location  int
 }
 
 // EntityComponentStore componentStore maps an entity to an array of indices corresponding to the location
 type EntityComponentStore struct {
 	Entities map[Entity]componentLocator
-}
-
-type EntityManager struct {
-	// Entities maps an entity (an uuid, essentially) to a slice of components (data/structs)
-	Entities map[Entity][]interface{}
 }
 
 func componentsToHash(components ...interface{}) uint32 {

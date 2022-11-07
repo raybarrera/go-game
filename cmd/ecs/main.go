@@ -9,12 +9,14 @@ var world *ecs.World
 
 func main() {
 	world = ecs.NewWorld()
-	world.CreateEntity([]interface{}{1})
+	world.CreateEntity([]any{1})
+	world.CreateEntity([]any{1, "something"})
+	world.CreateEntity([]any{func() {}, 1, &SystemComponents{}})
 	RunTest()
 }
 
 func RunTest() {
-	Update(0)
+
 }
 
 type SystemComponents struct {
