@@ -6,8 +6,8 @@ import (
 )
 
 func TeshHash_IsDeterministic(t *testing.T) {
-	a := hash("s")
-	b := hash("s")
+	a := componentsToHash("s")
+	b := componentsToHash("s")
 
 	if ok := int(a) == int(b); !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
@@ -15,9 +15,9 @@ func TeshHash_IsDeterministic(t *testing.T) {
 }
 
 func TestHash_HashingMultipleTimesReturnsSameResult(t *testing.T) {
-	a := hash("s")
-	b := hash("s")
-	b = hash("s")
+	a := componentsToHash("s")
+	b := componentsToHash("s")
+	b = componentsToHash("s")
 
 	if ok := a == b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
@@ -25,55 +25,56 @@ func TestHash_HashingMultipleTimesReturnsSameResult(t *testing.T) {
 }
 
 func TestHash_UsingMultipleInputsOfSameType(t *testing.T) {
-	a := hash("s", "D")
-	b := hash("s", "D")
+	a := componentsToHash("s", "D")
+	b := componentsToHash("s", "D")
 	if ok := a == b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
 }
 
 func TestHash_UsingMultipleInputsOfDifferentType(t *testing.T) {
-	a := hash("s", 1)
-	b := hash("s", 1)
+	a := componentsToHash("s", 1)
+	b := componentsToHash("s", 1)
 	if ok := a == b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
 }
 
 func TestHash_UsingMultipleInputsOfDifferentTypeDifferentOrder(t *testing.T) {
-	a := hash("s", 1)
-	b := hash(1, "s")
+	a := componentsToHash("s", 1)
+	b := componentsToHash(1, "s")
 	if ok := a == b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
 }
 
 func TestHash_UsingMultipleInputsOfDifferentTypesMismatch(t *testing.T) {
-	a := hash("s", 1.5)
-	b := hash(1, "s")
+	a := componentsToHash("s", 1.5)
+	b := componentsToHash(1, "s")
 	if ok := a != b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
 }
 
 func TestHash_MismatchedArgumentCountBreaks(t *testing.T) {
-	a := hash("s", 1, "d")
-	b := hash(1, "s")
+	a := componentsToHash("s", 1, "d")
+	b := componentsToHash(1, "s")
 	if ok := a != b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
 }
 
 func TestHash_UsingMultipleInputsOfSameTypeWithDiffrerentOrder(t *testing.T) {
-	a := hash("s", "D")
-	b := hash("D", "s")
+	a := componentsToHash("s", "D")
+	b := componentsToHash("D", "s")
 	if ok := a == b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
 }
+
 func TestHash_UsingMultipleInputsOfSameTypeWithDiffrerentOrderInverse(t *testing.T) {
-	a := hash("s", "d")
-	b := hash("D", "s")
+	a := componentsToHash("s", "d")
+	b := componentsToHash("D", "s")
 	if ok := a == b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
