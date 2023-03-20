@@ -5,6 +5,55 @@ import (
 	"testing"
 )
 
+// TestWorld_CreateEntity tests the creation of an TestWorld_CreateEntity
+func TestWorld_CreateEntity(t *testing.T) {
+	w := NewWorld()
+	w.CreateEntity([]interface{}{1})
+}
+
+// Test that ints and floats produce different hashes
+func TestHash_IntAndFloat(t *testing.T) {
+	a := componentsToHash(1)
+	b := componentsToHash(1.0)
+	if ok := a != b; !ok {
+		t.Errorf("Expected %v, got %v \n", true, ok)
+	}
+}
+
+// Test that maps produce matching hashes when the keys and values are the same
+func TestHash_Map(t *testing.T) {
+	a := componentsToHash(map[string]int{"a": 1})
+	b := componentsToHash(map[string]int{"a": 1})
+	if ok := a == b; !ok {
+		t.Errorf("Expected %v, got %v \n", true, ok)
+	}
+}
+
+// Test that maps with same keys and different values produce the same hashes
+func TestHash_MapWithDifferentValues(t *testing.T) {
+	a := componentsToHash(map[string]int{"a": 1})
+	b := componentsToHash(map[string]int{"a": 2})
+	if ok := a == b; !ok {
+		t.Errorf("Expected %v, got %v \n", true, ok)
+	}
+}
+
+// Test that a derived type produces a different hash than the base type
+func TestHash_DerivedType(t *testing.T) {
+	type A struct {
+		a int
+	}
+	type B struct {
+		A
+		b int
+	}
+	a := componentsToHash(A{1})
+	b := componentsToHash(B{A{1}, 2})
+	if ok := a != b; !ok {
+		t.Errorf("Expected %v == %v got %v \n", a, b, ok)
+	}
+}
+
 func TeshHash_IsDeterministic(t *testing.T) {
 	a := componentsToHash("s")
 	b := componentsToHash("s")
