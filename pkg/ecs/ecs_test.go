@@ -163,3 +163,74 @@ func TestContainsType(t *testing.T) {
 		})
 	}
 }
+
+type ComponentData struct{}
+type OtherComponent struct{}
+
+func TestGetNextIndexId(t *testing.T) {
+	a := &Archetype{}
+
+	expected := 0
+	actual := a.GetNextIndex()
+
+	if actual != expected {
+		t.Errorf("Expected %v, got %v", expected, actual)
+	}
+}
+
+func TestGetNextIndexId_NoAvailableSlots(t *testing.T) {
+	a := &Archetype{
+		componentGroup: map[reflect.Type][]any{
+			reflect.TypeOf(&ComponentData{}): {
+				&ComponentData{}, &ComponentData{},
+			},
+			reflect.TypeOf(&OtherComponent{}): {
+				&OtherComponent{}, &OtherComponent{}, &OtherComponent{},
+			},
+		},
+	}
+
+	expected := -1
+	actual := a.GetNextIndex()
+	if actual != expected {
+		t.Errorf("Expected %v, got %v", expected, actual)
+	}
+}
+
+func TestGetNextIndexId_SomeAvailableSlots(t *testing.T) {
+	a := &Archetype{
+		componentGroup: map[reflect.Type][]any{
+			reflect.TypeOf(&ComponentData{}): {
+				&ComponentData{}, nil,
+			},
+			reflect.TypeOf(&OtherComponent{}): {
+				&OtherComponent{}, OtherComponent{}, nil,
+			},
+		},
+	}
+
+	expected := 1
+	actual := a.GetNextIndex()
+	if actual != expected {
+		t.Errorf("Expected %v, got %v", expected, actual)
+	}
+}
+
+func TestFindNextAvailableIndex_OneAvailable(t *testing.T) {
+	a := &Archetype{
+		componentGroup: map[reflect.Type][]any{
+			reflect.TypeOf(&ComponentData{}): {
+				&ComponentData{}, nil,
+			},
+			reflect.TypeOf(&OtherComponent{}): {
+				&OtherComponent{}, nil,
+			},
+		},
+	}
+
+	expected := 1
+	actual := a.FindNextAvailableIndex()
+	if actual != expected {
+		t.Errorf("Expected %v, got %v", expected, actual)
+	}
+}

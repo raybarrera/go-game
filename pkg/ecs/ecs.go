@@ -75,7 +75,8 @@ func AddComponent[T any](to Entity, component T) {
 	//TODO: Migrate to new archetype
 }
 
-// RemoveComponentOfType TODO needs to figure out what happens when we have multiple components of the same type
+// RemoveComponentOfType TODO needs to figure out what happens when we
+// have multiple components of the same type
 func RemoveComponentOfType[T reflect.Type](from Entity, component T) {
 
 	//TODO: Calculate old archetype
@@ -101,27 +102,28 @@ func ForEach[T any](f func(T)) {
 // Definition maps a type to a slice of elements of that type.
 // The definition keys array can be used to query based on component types.
 type Archetype struct {
-	Id         uint32
-	NextIndex  int
-	definition map[reflect.Type][]any
+	Id             uint32
+	NextIndex      int
+	componentGroup map[reflect.Type][]any
 }
 
+// Create a new archetype with the given component types and id.
 func NewArchetype(id uint32, componentTypes ...reflect.Type) *Archetype {
-	a := Archetype{
-		Id:         id,
-		NextIndex:  0,
-		definition: make(map[reflect.Type][]any),
+	archetype := Archetype{
+		Id:             id,
+		NextIndex:      0,
+		componentGroup: make(map[reflect.Type][]any),
 	}
-	for _, v := range componentTypes {
-		a.definition[v] = make([]any, 1)
+	for _, componentType := range componentTypes {
+		archetype.componentGroup[componentType] = make([]any, 1)
 	}
-	return &a
+	return &archetype
 }
 
 func (a *Archetype) String() string {
 	s := ""
 	s += fmt.Sprintf("Archetype ID: %v\n", a.Id)
-	for k, v := range a.definition {
+	for k, v := range a.componentGroup {
 		s += fmt.Sprintf("| type: %v | items: %v |\n", k.String(), len(v))
 	}
 	s += fmt.Sprintf("| NextIndex: %v | Valid: %v |\n", a.NextIndex, a.GetNextIndex())
@@ -136,35 +138,76 @@ func (a *Archetype) AddEntity(components []any) {
 	for _, v := range components {
 		t := reflect.TypeOf(v)
 		if appendMode {
-			a.definition[t] = append(a.definition[t], v)
+			a.componentGroup[t] = append(a.componentGroup[t], v)
 		} else {
-			a.definition[t][a.NextIndex] = v
+			a.componentGroup[t][a.NextIndex] = v
 		}
 
 	}
 	a.NextIndex++
 }
 
+func (a *Archetype) FindNextAvailableIndex() int {
+	minLength := -1
+	for _, componentSlice := range a.componentGroup {
+		if minLength == -1 || len(componentSlice) < minLength {
+			minLength = len(componentSlice)
+		}
+	}
+
+	type result struct {
+		index int
+		seen  bool
+	}
+
+	resChan := make(chan result)
+
+	for i := 0; i < minLength; i++ {
+		go func(index int) {
+			isNil := false
+			for _, componentSlice := range a.componentGroup {
+				if componentSlice[index] != nil {
+					isNil = false
+					break
+				}
+				isNil = true
+			}
+			resChan <- result{index, isNil}
+		}(i)
+	}
+	for i := 0; i < minLength; i++ {
+		res := <-resChan
+		if res.seen {
+			a.NextIndex = res.index
+			return res.index
+		}
+	}
+	a.NextIndex = -1
+	return -1
+}
+
+// GetNextIndex returns the next available index in the archetype.
+// If the archetype is full, it returns -1.
 func (a *Archetype) GetNextIndex() int {
 	next := a.NextIndex
-	for _, v := range a.definition {
+	for _, componentSlice := range a.componentGroup {
 		isFull := true
-		if len(v) <= 0 {
+		if len(componentSlice) <= 0 {
 			isFull = true
 			break
 		}
-		if len(v) < next && v[next] == nil {
+		if len(componentSlice) < next && componentSlice[next] == nil {
 			break
 		}
-		for i, elem := range v {
-			if elem == nil {
+		for i, componentData := range componentSlice {
+			if componentData == nil {
 				isFull = false
 				next = i
 				break
 			}
 		}
 		if isFull {
-			a.NextIndex = len(v)
+			a.NextIndex = len(componentSlice)
 			next = -1
 		}
 		break
