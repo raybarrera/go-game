@@ -11,6 +11,9 @@ Simple demo game used to demonstrate a superset of game dev tools on top of `Ebi
 - ECS compatible
 
 ## 👾 Debug Console
+- Console logs
+- Cheat terminal
+- ECS world visualization
 
 ## How to use
 Run `main.go` to test the game itself.
