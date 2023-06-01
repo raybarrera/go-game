@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"reflect"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -49,24 +50,23 @@ func (w *World) Systems() []SystemUpdater {
 	return w.Systems()
 }
 
+// An Entity is essentially a collection of components.
+// Entities are stored in an ArchetypeStore which maps a hash of the components to an Archetype.
 func (w *World) CreateEntity(components []any) {
 	h := componentsToHash(components...)
 	var arch *Archetype
 	if val, ok := w.ArchetypeStore[h]; ok {
-		fmt.Println("Found arch")
 		arch = &val
 	} else {
-		fmt.Println("Creating arch entry")
 		var types []reflect.Type
 		for _, v := range components {
 			types = append(types, reflect.TypeOf(v))
 		}
-		arch = NewArchetype(h, types...)
+		arch = NewEmptyArchetype(h, types...)
 	}
-	//fmt.Println(arch.String())
 	arch.AddEntity(components)
 	w.ArchetypeStore[h] = *arch
-	fmt.Println(arch.String())
+	fmt.Println(arch.PrettyPrint())
 }
 
 func AddComponent[T any](to Entity, component T) {
@@ -98,17 +98,16 @@ func ForEach[T any](f func(T)) {
 
 }
 
-// Archetype contains a combination of types shared by various Entities.
-// Definition maps a type to a slice of elements of that type.
-// The definition keys array can be used to query based on component types.
+// Archetype represents a combination of components. It acts as a store for
+// the components of entities that share the same component types.
 type Archetype struct {
 	Id             uint32
 	NextIndex      int
 	componentGroup map[reflect.Type][]any
 }
 
-// Create a new archetype with the given component types and id.
-func NewArchetype(id uint32, componentTypes ...reflect.Type) *Archetype {
+// Create a new empty archetype for the given component types and id.
+func NewEmptyArchetype(id uint32, componentTypes ...reflect.Type) *Archetype {
 	archetype := Archetype{
 		Id:             id,
 		NextIndex:      0,
@@ -118,6 +117,25 @@ func NewArchetype(id uint32, componentTypes ...reflect.Type) *Archetype {
 		archetype.componentGroup[componentType] = make([]any, 1)
 	}
 	return &archetype
+}
+
+// Create a function that pretty prints the archetype.
+func (a *Archetype) PrettyPrint() string {
+	var sb strings.Builder
+
+	sb.WriteString("Archetype:\n")
+	sb.WriteString(fmt.Sprintf("  Id: %d\n", a.Id))
+	sb.WriteString(fmt.Sprintf("  NextIndex: %d\n", a.NextIndex))
+	sb.WriteString("  ComponentGroup:\n")
+
+	for t, group := range a.componentGroup {
+		sb.WriteString(fmt.Sprintf("    %s:\n", t.String()))
+		for i, component := range group {
+			sb.WriteString(fmt.Sprintf("      - [%d] %v\n", i, component))
+		}
+	}
+
+	return sb.String()
 }
 
 func (a *Archetype) String() string {
