@@ -53,20 +53,32 @@ func (w *World) Systems() []SystemUpdater {
 // An Entity is essentially a collection of components.
 // Entities are stored in an ArchetypeStore which maps a hash of the components to an Archetype.
 func (w *World) CreateEntity(components []any) {
-	h := componentsToHash(components...)
-	var arch *Archetype
-	if val, ok := w.ArchetypeStore[h]; ok {
-		arch = &val
-	} else {
-		var types []reflect.Type
-		for _, v := range components {
-			types = append(types, reflect.TypeOf(v))
-		}
-		arch = NewEmptyArchetype(h, types...)
+	h := createComponentHash(components...)
+	arch, ok := w.getEntityFromStore(components...)
+	if !ok {
+		arch = createNewArchetype(components...)
 	}
 	arch.AddEntity(components)
 	w.ArchetypeStore[h] = *arch
 	fmt.Println(arch.PrettyPrint())
+}
+
+func createNewArchetype(components ...any) *Archetype {
+	h := createComponentHash(components...)
+	var types []reflect.Type
+	for _, v := range components {
+		types = append(types, reflect.TypeOf(v))
+	}
+	arch := NewEmptyArchetype(h, types...)
+	return arch
+}
+
+func (w *World) getEntityFromStore(components ...any) (*Archetype, bool) {
+	h := createComponentHash(components...)
+	if val, ok := w.ArchetypeStore[h]; ok {
+		return &val, true
+	}
+	return nil, false
 }
 
 func AddComponent[T any](to Entity, component T) {
@@ -103,7 +115,7 @@ func ForEach[T any](f func(T)) {
 type Archetype struct {
 	ID             uint32
 	NextIndex      int
-	componentGroup map[reflect.Type][]any
+	componentTable map[reflect.Type][]any
 }
 
 // Create a new empty archetype for the given component types and id.
@@ -111,10 +123,10 @@ func NewEmptyArchetype(id uint32, componentTypes ...reflect.Type) *Archetype {
 	archetype := Archetype{
 		ID:             id,
 		NextIndex:      0,
-		componentGroup: make(map[reflect.Type][]any),
+		componentTable: make(map[reflect.Type][]any),
 	}
 	for _, componentType := range componentTypes {
-		archetype.componentGroup[componentType] = make([]any, 1)
+		archetype.componentTable[componentType] = make([]any, 1)
 	}
 	return &archetype
 }
@@ -128,7 +140,7 @@ func (a *Archetype) PrettyPrint() string {
 	sb.WriteString(fmt.Sprintf("  NextIndex: %d\n", a.NextIndex))
 	sb.WriteString("  ComponentGroup:\n")
 
-	for t, group := range a.componentGroup {
+	for t, group := range a.componentTable {
 		sb.WriteString(fmt.Sprintf("    %s:\n", t.String()))
 		for i, component := range group {
 			sb.WriteString(fmt.Sprintf("      - [%d] %v\n", i, component))
@@ -141,49 +153,51 @@ func (a *Archetype) PrettyPrint() string {
 func (a *Archetype) String() string {
 	s := ""
 	s += fmt.Sprintf("Archetype ID: %v\n", a.ID)
-	for k, v := range a.componentGroup {
+	for k, v := range a.componentTable {
 		s += fmt.Sprintf("| type: %v | items: %v |\n", k.String(), len(v))
 	}
-	s += fmt.Sprintf("| NextIndex: %v | Valid: %v |\n", a.NextIndex, a.GetNextIndex())
+	s += fmt.Sprintf("| NextIndex: %v | Valid: %v |\n", a.NextIndex, a.GetNextAvailableIndex())
 	return s
 }
 
-func (a *Archetype) AddEntity(components []any) {
+func (archetype *Archetype) AddEntity(components []any) error {
 	appendMode := false
-	if isFull := a.GetNextIndex() == -1; isFull {
+	if isFull := archetype.GetNextAvailableIndex() == -1; isFull {
 		appendMode = true
 	}
 	for _, v := range components {
 		t := reflect.TypeOf(v)
+		if _, ok := archetype.componentTable[t]; !ok {
+			return fmt.Errorf("component type %v not found in archetype", t)
+		}
 		if appendMode {
-			a.componentGroup[t] = append(a.componentGroup[t], v)
+			archetype.componentTable[t] = append(archetype.componentTable[t], v)
 		} else {
-			a.componentGroup[t][a.NextIndex] = v
+			archetype.componentTable[t][archetype.NextIndex] = v
 		}
 
 	}
-	a.NextIndex++
+	archetype.NextIndex++
+	return nil
 }
 
 func (a *Archetype) FindNextAvailableIndex() int {
 	minLength := -1
-	for _, componentSlice := range a.componentGroup {
+	for _, componentSlice := range a.componentTable {
 		if minLength == -1 || len(componentSlice) < minLength {
 			minLength = len(componentSlice)
 		}
 	}
-
 	type result struct {
 		index int
 		seen  bool
 	}
-
 	resChan := make(chan result)
 
 	for i := 0; i < minLength; i++ {
 		go func(index int) {
 			isNil := false
-			for _, componentSlice := range a.componentGroup {
+			for _, componentSlice := range a.componentTable {
 				if componentSlice[index] != nil {
 					isNil = false
 					break
@@ -204,11 +218,14 @@ func (a *Archetype) FindNextAvailableIndex() int {
 	return -1
 }
 
-// GetNextIndex returns the next available index in the archetype.
+// GetNextAvailableIndex returns the next available index in the archetype.
 // If the archetype is full, it returns -1.
-func (a *Archetype) GetNextIndex() int {
+func (a *Archetype) GetNextAvailableIndex() int {
+	if isIndexAvailable(a.componentTable, a.NextIndex) {
+		return a.NextIndex
+	}
 	next := a.NextIndex
-	for _, componentSlice := range a.componentGroup {
+	for _, componentSlice := range a.componentTable {
 		isFull := true
 		if len(componentSlice) <= 0 {
 			isFull = true
@@ -233,8 +250,52 @@ func (a *Archetype) GetNextIndex() int {
 	return next
 }
 
+func (a *Archetype) GetNextAvailableIndexOptimized() int {
+	if isIndexAvailable(a.componentTable, a.NextIndex) {
+		return a.NextIndex
+	}
+	shortestSlice := -1
+	for _, componentSlice := range a.componentTable {
+		if shortestSlice == -1 || len(componentSlice) < shortestSlice {
+			shortestSlice = len(componentSlice)
+		}
+	}
+
+	if shortestSlice <= 0 {
+		return 0
+	}
+
+	for i := 0; i < shortestSlice; i++ {
+		availableInAll := true
+		for _, componentSlice := range a.componentTable {
+			if componentSlice[i] != nil {
+				availableInAll = false
+
+				break
+			}
+		}
+
+		if availableInAll {
+			return i
+		}
+	}
+	return shortestSlice
+}
+
+func isIndexAvailable(componentTable map[reflect.Type][]any, index int) bool {
+	for _, componentSlice := range componentTable {
+		if len(componentSlice) <= index {
+			return false
+		}
+		if componentSlice[index] != nil {
+			return false
+		}
+	}
+	return true
+}
+
 func NewArchetypeId[T []any](componentTypes T) uint32 {
-	id := componentsToHash(componentTypes)
+	id := createComponentHash(componentTypes)
 	return id
 }
 
@@ -249,7 +310,7 @@ type EntityComponentStore struct {
 	Entities map[Entity]componentLocator
 }
 
-func componentsToHash(components ...interface{}) uint32 {
+func createComponentHash(components ...interface{}) uint32 {
 	h := fnv.New32()
 	var sum uint32 = 0
 	for _, component := range components {

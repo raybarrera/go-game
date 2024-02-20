@@ -14,8 +14,8 @@ func TestWorld_CreateEntity(t *testing.T) {
 
 // Test that ints and floats produce different hashes
 func TestHash_IntAndFloat(t *testing.T) {
-	a := componentsToHash(1)
-	b := componentsToHash(1.0)
+	a := createComponentHash(1)
+	b := createComponentHash(1.0)
 	if ok := a != b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
@@ -23,8 +23,8 @@ func TestHash_IntAndFloat(t *testing.T) {
 
 // Test that maps produce matching hashes when the keys and values are the same
 func TestHash_Map(t *testing.T) {
-	a := componentsToHash(map[string]int{"a": 1})
-	b := componentsToHash(map[string]int{"a": 1})
+	a := createComponentHash(map[string]int{"a": 1})
+	b := createComponentHash(map[string]int{"a": 1})
 	if ok := a == b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
@@ -32,8 +32,8 @@ func TestHash_Map(t *testing.T) {
 
 // Test that maps with same keys and different values produce the same hashes
 func TestHash_MapWithDifferentValues(t *testing.T) {
-	a := componentsToHash(map[string]int{"a": 1})
-	b := componentsToHash(map[string]int{"a": 2})
+	a := createComponentHash(map[string]int{"a": 1})
+	b := createComponentHash(map[string]int{"a": 2})
 	if ok := a == b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
@@ -48,16 +48,16 @@ func TestHash_DerivedType(t *testing.T) {
 		A
 		b int
 	}
-	a := componentsToHash(A{1})
-	b := componentsToHash(B{A{1}, 2})
+	a := createComponentHash(A{1})
+	b := createComponentHash(B{A{1}, 2})
 	if ok := a != b; !ok {
 		t.Errorf("Expected %v == %v got %v \n", a, b, ok)
 	}
 }
 
 func TeshHash_IsDeterministic(t *testing.T) {
-	a := componentsToHash("s")
-	b := componentsToHash("s")
+	a := createComponentHash("s")
+	b := createComponentHash("s")
 
 	if ok := int(a) == int(b); !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
@@ -65,9 +65,9 @@ func TeshHash_IsDeterministic(t *testing.T) {
 }
 
 func TestHash_HashingMultipleTimesReturnsSameResult(t *testing.T) {
-	a := componentsToHash("s")
-	b := componentsToHash("s")
-	b = componentsToHash("s")
+	a := createComponentHash("s")
+	b := createComponentHash("s")
+	b = createComponentHash("s")
 
 	if ok := a == b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
@@ -75,56 +75,56 @@ func TestHash_HashingMultipleTimesReturnsSameResult(t *testing.T) {
 }
 
 func TestHash_UsingMultipleInputsOfSameType(t *testing.T) {
-	a := componentsToHash("s", "D")
-	b := componentsToHash("s", "D")
+	a := createComponentHash("s", "D")
+	b := createComponentHash("s", "D")
 	if ok := a == b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
 }
 
 func TestHash_UsingMultipleInputsOfDifferentType(t *testing.T) {
-	a := componentsToHash("s", 1)
-	b := componentsToHash("s", 1)
+	a := createComponentHash("s", 1)
+	b := createComponentHash("s", 1)
 	if ok := a == b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
 }
 
 func TestHash_UsingMultipleInputsOfDifferentTypeDifferentOrder(t *testing.T) {
-	a := componentsToHash("s", 1)
-	b := componentsToHash(1, "s")
+	a := createComponentHash("s", 1)
+	b := createComponentHash(1, "s")
 	if ok := a == b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
 }
 
 func TestHash_UsingMultipleInputsOfDifferentTypesMismatch(t *testing.T) {
-	a := componentsToHash("s", 1.5)
-	b := componentsToHash(1, "s")
+	a := createComponentHash("s", 1.5)
+	b := createComponentHash(1, "s")
 	if ok := a != b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
 }
 
 func TestHash_MismatchedArgumentCountBreaks(t *testing.T) {
-	a := componentsToHash("s", 1, "d")
-	b := componentsToHash(1, "s")
+	a := createComponentHash("s", 1, "d")
+	b := createComponentHash(1, "s")
 	if ok := a != b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
 }
 
 func TestHash_UsingMultipleInputsOfSameTypeWithDiffrerentOrder(t *testing.T) {
-	a := componentsToHash("s", "D")
-	b := componentsToHash("D", "s")
+	a := createComponentHash("s", "D")
+	b := createComponentHash("D", "s")
 	if ok := a == b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
 }
 
 func TestHash_UsingMultipleInputsOfSameTypeWithDiffrerentOrderInverse(t *testing.T) {
-	a := componentsToHash("s", "d")
-	b := componentsToHash("D", "s")
+	a := createComponentHash("s", "d")
+	b := createComponentHash("D", "s")
 	if ok := a == b; !ok {
 		t.Errorf("Expected %v, got %v \n", true, ok)
 	}
@@ -172,7 +172,7 @@ func TestGetNextIndexId(t *testing.T) {
 	a := &Archetype{}
 
 	expected := 0
-	actual := a.GetNextIndex()
+	actual := a.GetNextAvailableIndex()
 
 	if actual != expected {
 		t.Errorf("Expected %v, got %v", expected, actual)
@@ -181,7 +181,7 @@ func TestGetNextIndexId(t *testing.T) {
 
 func TestGetNextIndexId_NoAvailableSlots(t *testing.T) {
 	a := &Archetype{
-		componentGroup: map[reflect.Type][]any{
+		componentTable: map[reflect.Type][]any{
 			reflect.TypeOf(&ComponentData{}): {
 				&ComponentData{}, &ComponentData{},
 			},
@@ -192,7 +192,7 @@ func TestGetNextIndexId_NoAvailableSlots(t *testing.T) {
 	}
 
 	expected := -1
-	actual := a.GetNextIndex()
+	actual := a.GetNextAvailableIndex()
 	if actual != expected {
 		t.Errorf("Expected %v, got %v", expected, actual)
 	}
@@ -200,7 +200,7 @@ func TestGetNextIndexId_NoAvailableSlots(t *testing.T) {
 
 func TestGetNextIndexId_SomeAvailableSlots(t *testing.T) {
 	a := &Archetype{
-		componentGroup: map[reflect.Type][]any{
+		componentTable: map[reflect.Type][]any{
 			reflect.TypeOf(&ComponentData{}): {
 				&ComponentData{}, nil,
 			},
@@ -211,15 +211,29 @@ func TestGetNextIndexId_SomeAvailableSlots(t *testing.T) {
 	}
 
 	expected := 1
-	actual := a.GetNextIndex()
+	actual := a.GetNextAvailableIndex()
 	if actual != expected {
 		t.Errorf("Expected %v, got %v", expected, actual)
 	}
 }
 
+// Define a complex archetype variable with a large componentTable containing slices with 20 components for benchmarking
+var complexArchetype = &Archetype{
+	componentTable: map[reflect.Type][]any{
+		reflect.TypeOf(&ComponentData{}): {
+			&ComponentData{}, nil, &ComponentData{}, nil, &ComponentData{}, nil, &ComponentData{}, nil, &ComponentData{}, nil,
+			&ComponentData{}, nil, &ComponentData{}, nil, &ComponentData{}, nil, &ComponentData{}, nil, &ComponentData{}, nil,
+		},
+		reflect.TypeOf(&OtherComponent{}): {
+			&OtherComponent{}, nil, &OtherComponent{}, nil, &OtherComponent{}, nil, &OtherComponent{}, nil, &OtherComponent{}, nil,
+			&OtherComponent{}, nil, &OtherComponent{}, nil, &OtherComponent{}, nil, &OtherComponent{}, nil, &OtherComponent{}, nil,
+		},
+	},
+}
+
 func TestFindNextAvailableIndex_OneAvailable(t *testing.T) {
 	a := &Archetype{
-		componentGroup: map[reflect.Type][]any{
+		componentTable: map[reflect.Type][]any{
 			reflect.TypeOf(&ComponentData{}): {
 				&ComponentData{}, nil,
 			},
@@ -228,12 +242,49 @@ func TestFindNextAvailableIndex_OneAvailable(t *testing.T) {
 			},
 		},
 	}
-
 	expected := 1
 	actual := a.FindNextAvailableIndex()
 	if actual != expected {
 		t.Errorf("Expected %v, got %v", expected, actual)
 	}
+}
+
+func BenchmarkAllGetNextAvailableIndex(b *testing.B) {
+	b.Run("Normal", func(b *testing.B) {
+		a := *complexArchetype
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			a.GetNextAvailableIndex()
+		}
+	})
+	b.Run("Optimized Miss", func(b *testing.B) {
+		a := *complexArchetype
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			a.GetNextAvailableIndexOptimized()
+		}
+	})
+	b.Run("Optimized Hit", func(b *testing.B) {
+		a := *complexArchetype
+		a.NextIndex = 1
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			a.GetNextAvailableIndexOptimized()
+		}
+	})
+	b.Run("Goroutine", func(b *testing.B) {
+		a := *complexArchetype
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			a.FindNextAvailableIndex()
+		}
+	})
+}
+
+func measureFuncTime(f func() int) time.Duration {
+	start := time.Now()
+	f()
+	return time.Since(start)
 }
 
 func measureTime(f func(...interface{}) uint32, components ...interface{}) time.Duration {
@@ -280,27 +331,23 @@ func BenchmarkComponentsToHash(b *testing.B) {
 	}
 	b.Run("Simple", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			time := measureTime(componentsToHash, simpleStruct)
-			b.Logf("Iteration %d: %v", i+1, time)
+			createComponentHash(simpleStruct)
 		}
 	})
 
 	b.Run("Embedded", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			time := measureTime(componentsToHash, embeddedStruct)
-			b.Logf("Iteration %d: %v", i+1, time)
+			createComponentHash(embeddedStruct)
 		}
 	})
 	b.Run("Complex", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			time := measureTime(componentsToHash, complexStruct)
-			b.Logf("Iteration %d: %v", i+1, time)
+			createComponentHash(complexStruct)
 		}
 	})
 	b.Run("Polymorphic", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			time := measureTime(componentsToHash, polymorphicComponent)
-			b.Logf("Iteration %d: %v", i+1, time)
+			createComponentHash(polymorphicComponent)
 		}
 	})
 }
