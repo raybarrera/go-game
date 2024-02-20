@@ -12,6 +12,7 @@ import (
 // Entity is a uuid. Conceptually, however, an entity is defined by the components it's comprised of.
 type Entity uuid.UUID
 
+// String returns the string representation of the entity.
 func (id Entity) String() string {
 	return uuid.UUID(id).String()
 }
@@ -27,27 +28,21 @@ type SystemUpdater interface {
 }
 
 // World manages all systems and entities
-// TODO: Entities is not in use. Right now entities are arrays inside of systems, not the world. Pick a lane.
 type World struct {
-	SystemUpdaters []SystemUpdater
-	ArchetypeStore map[uint32]Archetype
+	SystemUpdaters    []SystemUpdater
+	ArchetypeDatabase map[uint32]Archetype
 }
 
 func NewWorld() *World {
 	return &World{
-		SystemUpdaters: make([]SystemUpdater, 0, 10),
-		ArchetypeStore: make(map[uint32]Archetype),
+		SystemUpdaters:    make([]SystemUpdater, 0, 10),
+		ArchetypeDatabase: make(map[uint32]Archetype),
 	}
 }
 
 // AddSystem adds a system for the given world to manage.
 func (w *World) AddSystem(system SystemUpdater) {
 	w.SystemUpdaters = append(w.SystemUpdaters, system)
-}
-
-// Systems is a getter for the world's []Systems slice
-func (w *World) Systems() []SystemUpdater {
-	return w.Systems()
 }
 
 // An Entity is essentially a collection of components.
@@ -59,10 +54,11 @@ func (w *World) CreateEntity(components []any) {
 		arch = createNewArchetype(components...)
 	}
 	arch.AddEntity(components)
-	w.ArchetypeStore[h] = *arch
+	w.ArchetypeDatabase[h] = *arch
 	fmt.Println(arch.PrettyPrint())
 }
 
+// createNewArchetype creates a new archetype with the given components.
 func createNewArchetype(components ...any) *Archetype {
 	h := createComponentHash(components...)
 	var types []reflect.Type
@@ -75,7 +71,7 @@ func createNewArchetype(components ...any) *Archetype {
 
 func (w *World) getEntityFromStore(components ...any) (*Archetype, bool) {
 	h := createComponentHash(components...)
-	if val, ok := w.ArchetypeStore[h]; ok {
+	if val, ok := w.ArchetypeDatabase[h]; ok {
 		return &val, true
 	}
 	return nil, false
@@ -179,43 +175,6 @@ func (archetype *Archetype) AddEntity(components []any) error {
 	}
 	archetype.NextIndex++
 	return nil
-}
-
-func (a *Archetype) FindNextAvailableIndex() int {
-	minLength := -1
-	for _, componentSlice := range a.componentTable {
-		if minLength == -1 || len(componentSlice) < minLength {
-			minLength = len(componentSlice)
-		}
-	}
-	type result struct {
-		index int
-		seen  bool
-	}
-	resChan := make(chan result)
-
-	for i := 0; i < minLength; i++ {
-		go func(index int) {
-			isNil := false
-			for _, componentSlice := range a.componentTable {
-				if componentSlice[index] != nil {
-					isNil = false
-					break
-				}
-				isNil = true
-			}
-			resChan <- result{index, isNil}
-		}(i)
-	}
-	for i := 0; i < minLength; i++ {
-		res := <-resChan
-		if res.seen {
-			a.NextIndex = res.index
-			return res.index
-		}
-	}
-	a.NextIndex = -1
-	return -1
 }
 
 // GetNextAvailableIndex returns the next available index in the archetype.

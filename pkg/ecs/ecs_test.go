@@ -231,24 +231,6 @@ var complexArchetype = &Archetype{
 	},
 }
 
-func TestFindNextAvailableIndex_OneAvailable(t *testing.T) {
-	a := &Archetype{
-		componentTable: map[reflect.Type][]any{
-			reflect.TypeOf(&ComponentData{}): {
-				&ComponentData{}, nil,
-			},
-			reflect.TypeOf(&OtherComponent{}): {
-				&OtherComponent{}, nil,
-			},
-		},
-	}
-	expected := 1
-	actual := a.FindNextAvailableIndex()
-	if actual != expected {
-		t.Errorf("Expected %v, got %v", expected, actual)
-	}
-}
-
 func BenchmarkAllGetNextAvailableIndex(b *testing.B) {
 	b.Run("Normal", func(b *testing.B) {
 		a := *complexArchetype
@@ -270,13 +252,6 @@ func BenchmarkAllGetNextAvailableIndex(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			a.GetNextAvailableIndexOptimized()
-		}
-	})
-	b.Run("Goroutine", func(b *testing.B) {
-		a := *complexArchetype
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			a.FindNextAvailableIndex()
 		}
 	})
 }
