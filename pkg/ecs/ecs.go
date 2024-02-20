@@ -16,7 +16,7 @@ func (id Entity) String() string {
 	return uuid.UUID(id).String()
 }
 
-func NewEntityId() Entity {
+func NewEntityID() Entity {
 	id, _ := uuid.NewUUID()
 	return Entity(id)
 }
@@ -101,7 +101,7 @@ func ForEach[T any](f func(T)) {
 // Archetype represents a combination of components. It acts as a store for
 // the components of entities that share the same component types.
 type Archetype struct {
-	Id             uint32
+	ID             uint32
 	NextIndex      int
 	componentGroup map[reflect.Type][]any
 }
@@ -109,7 +109,7 @@ type Archetype struct {
 // Create a new empty archetype for the given component types and id.
 func NewEmptyArchetype(id uint32, componentTypes ...reflect.Type) *Archetype {
 	archetype := Archetype{
-		Id:             id,
+		ID:             id,
 		NextIndex:      0,
 		componentGroup: make(map[reflect.Type][]any),
 	}
@@ -124,7 +124,7 @@ func (a *Archetype) PrettyPrint() string {
 	var sb strings.Builder
 
 	sb.WriteString("Archetype:\n")
-	sb.WriteString(fmt.Sprintf("  Id: %d\n", a.Id))
+	sb.WriteString(fmt.Sprintf("  Id: %d\n", a.ID))
 	sb.WriteString(fmt.Sprintf("  NextIndex: %d\n", a.NextIndex))
 	sb.WriteString("  ComponentGroup:\n")
 
@@ -140,7 +140,7 @@ func (a *Archetype) PrettyPrint() string {
 
 func (a *Archetype) String() string {
 	s := ""
-	s += fmt.Sprintf("Archetype ID: %v\n", a.Id)
+	s += fmt.Sprintf("Archetype ID: %v\n", a.ID)
 	for k, v := range a.componentGroup {
 		s += fmt.Sprintf("| type: %v | items: %v |\n", k.String(), len(v))
 	}
@@ -252,9 +252,9 @@ type EntityComponentStore struct {
 func componentsToHash(components ...interface{}) uint32 {
 	h := fnv.New32()
 	var sum uint32 = 0
-	for _, v := range components {
+	for _, component := range components {
 		h.Reset()
-		name := []byte(reflect.TypeOf(v).Name())
+		name := []byte(reflect.TypeOf(component).Name())
 		h.Write(name)
 		sum += h.Sum32()
 	}

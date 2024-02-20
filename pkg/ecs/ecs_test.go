@@ -3,6 +3,7 @@ package ecs
 import (
 	"reflect"
 	"testing"
+	"time"
 )
 
 // TestWorld_CreateEntity tests the creation of an TestWorld_CreateEntity
@@ -233,4 +234,73 @@ func TestFindNextAvailableIndex_OneAvailable(t *testing.T) {
 	if actual != expected {
 		t.Errorf("Expected %v, got %v", expected, actual)
 	}
+}
+
+func measureTime(f func(...interface{}) uint32, components ...interface{}) time.Duration {
+	start := time.Now()
+	f(components...)
+	return time.Since(start)
+}
+
+type Behavior interface {
+	Act() string
+}
+type PolymorphicComponent struct {
+	Behaviors []Behavior
+}
+type SpecificBehavior struct {
+	Description string
+}
+
+func (sb SpecificBehavior) Act() string {
+	return sb.Description
+}
+func BenchmarkComponentsToHash(b *testing.B) {
+	type NestedComponent struct {
+		Timestamp time.Time
+		Data      []byte
+	}
+
+	simpleStruct := struct{ name string }{name: "Simple"}
+	embeddedStruct := struct{ Simple, additionalField string }{Simple: "Embedded", additionalField: "Data"}
+	complexStruct := struct {
+		Coordinates []float64
+		Properties  map[string]string
+		Nested      NestedComponent
+	}{
+		Coordinates: []float64{1.0, 2.0},
+		Properties:  map[string]string{"a": "b"},
+		Nested:      NestedComponent{Timestamp: time.Now(), Data: []byte("data")},
+	}
+	polymorphicComponent := PolymorphicComponent{
+		Behaviors: []Behavior{
+			SpecificBehavior{Description: "Behavior 1"},
+			SpecificBehavior{Description: "Behavior 2"},
+		},
+	}
+	b.Run("Simple", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			time := measureTime(componentsToHash, simpleStruct)
+			b.Logf("Iteration %d: %v", i+1, time)
+		}
+	})
+
+	b.Run("Embedded", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			time := measureTime(componentsToHash, embeddedStruct)
+			b.Logf("Iteration %d: %v", i+1, time)
+		}
+	})
+	b.Run("Complex", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			time := measureTime(componentsToHash, complexStruct)
+			b.Logf("Iteration %d: %v", i+1, time)
+		}
+	})
+	b.Run("Polymorphic", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			time := measureTime(componentsToHash, polymorphicComponent)
+			b.Logf("Iteration %d: %v", i+1, time)
+		}
+	})
 }
